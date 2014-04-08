@@ -8,7 +8,7 @@ import multiprocessing
 
 def get_pop((i,name)):
 	try:
-		r = requests.get('http://stats.grok.se/en/latest90/'+urllib.quote(name), timeout=5)
+		r = requests.get('http://stats.grok.se/en/latest90/'+urllib.quote(name), timeout=20)
 		h = html.fromstring(r.content)
 		e = h.xpath('//p[1]')[0]
 
@@ -25,26 +25,27 @@ def get_pop((i,name)):
 			'wikipedia_count' : wikipedia_count,
 		}
 
-	except requests.exceptions.Timeout:
+	except:# requests.exceptions.Timeout:
 		print i, '!!!', name
 		return None
 
 
-DF = pd.read_csv("./famous_people.csv")
-fetch_list = [(i,name) for i, (name, _, _, _, _) in list(DF.iterrows())[20000:30000]]
+# DF = pd.read_csv("data/famous_people.csv")
+# fetch_list = [(i,name) for i, (name, _, _, _, _) in list(DF.iterrows())[25000:]]
 
-# A = pd.read_csv("./famous_people.csv")
-# B = pd.DataFrame([json.loads(l) for l in file('./wikipedia_popularity.jl', 'r').read().splitlines()])
-# missing = set(A.index).difference(B["index"])
-# C = A.ix[missing]
-# fetch_list = [(i,name) for i, (name, _, _, _, _) in list(C.iterrows())]
+A = pd.read_csv("data/famous_people.csv")
+B = pd.DataFrame([json.loads(l) for l in file('data/wikipedia_popularity.jl', 'r').read().splitlines()])
+missing = set(A.index).difference(B["index"])
+C = A.ix[missing]
+fetch_list = [(i,name) for i, (name, _, _, _, _) in list(C.iterrows())]
+print len(fetch_list)
 
-pool = multiprocessing.Pool(20)
+pool = multiprocessing.Pool(40)
 results = pool.map(get_pop, fetch_list)
-print sum([r==None for r in results])*1./len(results), "percent complete"
+print sum([r==None for r in results])*1./len(results), "percent missed"
 
 
-outfile = file('wikipedia_popularity.jl', 'ab')
+outfile = file('data/wikipedia_popularity.jl', 'ab')
 for r in results:
 	if r != None:
 		outfile.write(json.dumps(r)+'\n')

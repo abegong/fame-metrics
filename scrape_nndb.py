@@ -56,4 +56,4 @@ for url in letter_urls:
 	info = info+zip( names, occupations, summaries, birthdays, deathdays )
 
 DF = pd.DataFrame(info, columns=["name", "occupation", "summary", "birthday", "deathday"])
-DF.to_csv("famous_people.csv", index=False)
+DF.to_csv("data/famous_people.csv", index=False)

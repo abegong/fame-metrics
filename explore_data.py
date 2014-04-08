@@ -1,17 +1,17 @@
 import pandas as pd
-pd.read_csv(data_path+"gform-surveys/Getting stuff done (Responses) - Form Responses.csv")
-A = pd.read_csv("./famous_people.csv")
-list(A)
-A.occupation.value_counts()
-A[A.occupation=='Stamp Collector']
-A.occupation.value_counts().value_counts().hist()
 import pylab as plt
-plt.show()
-A.occupation.value_counts().hist()
-plt.show()
+
+A = pd.read_csv("data/famous_people.csv")
+
+#How many people in each occupation?
 x = A.occupation.value_counts()
-x[x>100]
-x[x>100].sum()
-x[x>100].sum()*1./x.xum()
-x[x>100].sum()*1./x.sum()
-x[x>500].sum()*1./x.sum()
+print x.to_string
+print x[x>100].sum()*1./x.sum()
+print x[x>500].sum()*1./x.sum()
+
+#Natural categories for occupations?
+
+#How many people in each categories?
+#Average fame by birthday?
+#Average fame by category?
+#Fame deciles by category?

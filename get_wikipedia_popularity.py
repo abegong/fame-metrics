@@ -5,7 +5,7 @@ from lxml import html
 import re
 import json
 
-DF = pd.read_csv("./famous_people.csv")
+DF = pd.read_csv("data/famous_people.csv")
 
 for i, (name, _, _, _, _) in list(DF.iterrows())[16890:]:
 	try:
