@@ -45,9 +45,25 @@ var choose = function(A){
 };
 
 var mock_fb = {
-    get_question : function(){
+    get_question : function(list_id){
+//        var q_type = choose(['basic', 'not_describe', 'name_something', 'most_famous', 'pick_topic']);
+        var q_type = choose(['name_something']);
+
+        if ( q_type=='basic'){ q_content = mock_fb.create_basic_question(); }
+        else if ( q_type=='not_describe' ){ q_content = mock_fb.create_not_describe_question(); }
+        else if ( q_type=='name_something' ){ q_content = mock_fb.create_name_something_question(); }
+        else if ( q_type=='most_famous' ){ q_content = mock_fb.create_most_famous_question(); }
+        else if ( q_type=='pick_topic' ){ q_content = mock_fb.create_pick_topic_question(); }
+        else { q_content = {}}
+        
         return {
             id: Math.floor(Math.random()*10000),
+            q_type : q_type,
+            q_content : q_content,
+        }
+    },
+    create_basic_question : function(){
+        return{
             name: choose(names),
             right_answer: {id: 1, val: choose(tags)},
             wrong_answers: [
@@ -57,11 +73,53 @@ var mock_fb = {
                 {id: 5, val: choose(tags)}
             ]
         }
+    },
+    create_not_describe_question : function(){
+        return{
+            name: choose(names),
+            right_answer: {id: 1, val: choose(tags)},
+            wrong_answers: [
+                {id: 2, val: choose(tags)},
+                {id: 3, val: choose(tags)},
+                {id: 4, val: choose(tags)},
+                {id: 5, val: choose(tags)}
+            ]
+        }
+    },
+    create_name_something_question : function(){
+        return{
+            name: choose(names),
+            right_answers: []//!Eventually, this should contain all the right answers for this person, so we can do regex matching against the user's answer
+        }
+    },
+    create_most_famous_question : function(){
+        return {
+            names: [
+                {id: 1, val: choose(names)},  
+                {id: 2, val: choose(names)},  
+                {id: 3, val: choose(names)},  
+                {id: 4, val: choose(names)},
+                {id: 5, val: choose(names)}   
+            ]
+        }
+    },
+    create_pick_topic_question : function(){
+        return {
+            topics: [
+                {id: 1, val: choose(topics)},  
+                {id: 2, val: choose(topics)},  
+                {id: 3, val: choose(topics)},  
+                {id: 4, val: choose(topics)},
+                {id: 5, val: choose(topics)}   
+            ]
+        }    
     }
 };
 
 var mclbiq = {
     session_name : null,
+    
+    //--- Major API events ---//
     begin_quiz : function(){
         mclbiq.set_session_name();
         mclbiq.start_timer();
@@ -71,150 +129,15 @@ var mclbiq = {
     //                return 'Are you sure you want to quit?\nIf you go, make sure to write down this code: '+session_name+' so that you can get your score later.'
     //            });
     },
-    set_session_name : function(){
-        mclbiq.session_name = choose(famous_adjs)+'-'+choose(famous_nouns)+'-'+Math.floor(1000+9000*Math.random());
-        $(".session-name").html(mclbiq.session_name);
-    },
-    start_timer : function(){
-        var start = new Date().getTime();
-        window.setInterval(function()
-        {
-            var time = new Date().getTime() - start;
+    
+    next_question : function(q_json){
+        if ( q_json.q_type=='basic'){ mclbiq.create_basic_question(q_json); }
+        else if ( q_json.q_type=='not_describe' ){ mclbiq.create_not_describe_question(q_json); }
+        else if ( q_json.q_type=='name_something' ){ mclbiq.create_name_something_question(q_json); }
+        else if ( q_json.q_type=='most_famous' ){ mclbiq.create_most_famous_question(q_json); }
+        else if ( q_json.q_type=='pick_topic' ){ mclbiq.create_pick_topic_question(q_json); }
+//        else { q_content = {}}
 
-            var totalSec = Math.floor(time / 1000);
-            var minutes = parseInt( totalSec / 60 );// % 60;
-            var seconds = totalSec % 60;
-
-            var result = (minutes) + ":" + (seconds  < 10 ? "0" + seconds : seconds);
-            $("#timer").html(result);
-        }, 100);
-    },
-    create_basic_question : function(j){
-        //Create q object
-        var new_q = $("#proto_q")
-            .clone()
-            .attr("id","none")
-            .prependTo($("#main"));
-
-        //Append data in the proper fields
-        $(".qhead", new_q).append('<h2 class="title">Who is <span class="celeb_name"><b>Harrison Ford</b></span>?</h2>');
-        $(".celeb_name", new_q).html(j.name);
-        
-        $(".qbody", new_q).append('<div class="qanswer" data-correct=1><input type="radio" name="q'+j.id+'" value="'+j.right_answer.id+'"><span>'+j.right_answer.val+'</span></div>');
-        for( a in j.wrong_answers ){
-            $(".qbody", new_q).append('<div class="qanswer" data-correct=0><input type="radio" name="q'+j.id+'" value="'+j.wrong_answers[a].id+'"><span>'+j.wrong_answers[a].val+'</span></div>');
-        }
-
-        //Set up events
-        $(".qanswer", new_q)
-            .mouseover(function(){$(this).css("background-color","#ddd")})
-            .mouseout(function(){$(this).css("background-color","#fff")})
-            .click(mclbiq.answer_question)
-            .detach()
-            .sort( function(){ return ( Math.round( Math.random() ) - 0.5 ) } )
-            .appendTo($(".qbody", new_q));
-        
-        new_q.slideDown(500);
-    },
-    create_bkwd_question : function(j){
-        //Create q object
-        var new_q = $("#proto_q")
-            .clone()
-            .attr("id","none")
-            .prependTo($("#main"));
-
-        //Append data in the proper fields
-        $(".qhead", new_q).append('<h2 class="title">Which of these does <i><b>not</b></i> describe <b>'+j.name+'</b>?</h2>');
-        
-        $(".qbody", new_q).append('<div class="qanswer" data-correct=1><input type="radio" name="q'+j.id+'" value="'+j.right_answer.id+'"><span>'+j.right_answer.val+'</span></div>');
-        for( a in j.wrong_answers ){
-            $(".qbody", new_q).append('<div class="qanswer" data-correct=0><input type="radio" name="q'+j.id+'" value="'+j.wrong_answers[a].id+'"><span>'+j.wrong_answers[a].val+'</span></div>');
-        }
-
-        //Set up events
-        $(".qanswer", new_q)
-            .mouseover(function(){$(this).css("background-color","#ddd")})
-            .mouseout(function(){$(this).css("background-color","#fff")})
-            .click(mclbiq.answer_question)
-            .detach()
-            .sort( function(){ return ( Math.round( Math.random() ) - 0.5 ) } )
-            .appendTo($(".qbody", new_q));
-        
-        new_q.slideDown(500);
-    },
-    create_name_something_question : function(j){
-        //Create q object
-        var new_q = $("#proto_q")
-            .clone()
-            .attr("id","none")
-            .prependTo($("#main"));
-
-        //Append data in the proper fields
-        $(".qhead", new_q).append('<h2 class="title">Name something unique and noteworthy about <b>'+j.name+'</b>.</h2>');
-        $(".qbody", new_q).append('<textarea rows=3 name="q'+j.id+'"></textarea><div class="submit">Done</div>');
-
-        //Set up events
-        //...
-        
-        new_q.slideDown(500);
-    },
-    create_most_famous_question : function(j){
-        //Create q object
-        var new_q = $("#proto_q")
-            .clone()
-            .attr("id","none")
-            .prependTo($("#main"));
-
-        //Append data in the proper fields
-        $(".qhead", new_q).append('<h2 class="title">Which of these celebrities do you think is the <i><b>most</b></i> famous?</h2>');
-        
-        for( a in j.wrong_answers ){
-            $(".qbody", new_q).append('<div class="qanswer" data-correct=0><input type="radio" name="q'+j.id+'" value="'+j.wrong_answers[a].id+'"><span>'+j.wrong_answers[a].val+'</span></div>');
-        }
-
-        //Set up events
-        $(".qanswer", new_q)
-            .mouseover(function(){$(this).css("background-color","#ddd")})
-            .mouseout(function(){$(this).css("background-color","#fff")})
-            .click(mclbiq.answer_question)
-            .detach()
-            .sort( function(){ return ( Math.round( Math.random() ) - 0.5 ) } )
-            .appendTo($(".qbody", new_q));
-        
-        new_q.slideDown(500);
-    },
-    create_pick_topic_question : function(j){
-        //Create q object
-        var new_q = $("#proto_q")
-            .clone()
-            .attr("id","none")
-            .prependTo($("#main"));
-
-        //Append data in the proper fields
-        $(".qhead", new_q).append('<h2 class="title">Pick a topic for your next set of questions</h2>');
-        
-        var lists = ["Sports", "Science", "Movies", "Politics", "History"];
-        for( a in lists ){
-            $(".qbody", new_q).append('<div class="qanswer" data-correct=0><input type="radio" name="q'+j.id+'" value="'+lists[a]+'"><span>'+lists[a]+'</span></div>');
-        }
-
-        //Set up events
-        $(".qanswer", new_q)
-            .mouseover(function(){$(this).css("background-color","#ddd")})
-            .mouseout(function(){$(this).css("background-color","#fff")})
-            .click(mclbiq.answer_question)
-            .detach()
-            .sort( function(){ return ( Math.round( Math.random() ) - 0.5 ) } )
-            .appendTo($(".qbody", new_q));
-        
-        new_q.slideDown(500);
-    },
-    next_question : function(j){
-        mclbiq.create_basic_question(j);
-//        mclbiq.create_name_something_question(j);
-//        mclbiq.create_bkwd_question(j);
-//        mclbiq.create_most_famous_question(j);
-//        mclbiq.create_pick_topic_question(j);
     },
     answer_question : function(){
         $("input", this).attr("checked", true);
@@ -254,10 +177,150 @@ var mclbiq = {
                 mclbiq.next_question(mock_fb.get_question());
             }
         );
+    },
 
+    //--- Utility functions ---//
+    set_session_name : function(){
+        mclbiq.session_name = choose(famous_adjs)+'-'+choose(famous_nouns)+'-'+Math.floor(1000+9000*Math.random());
+        $(".session-name").html(mclbiq.session_name);
+    },
+    start_timer : function(){
+        var start = new Date().getTime();
+        window.setInterval(function()
+        {
+            var time = new Date().getTime() - start;
 
+            var totalSec = Math.floor(time / 1000);
+            var minutes = parseInt( totalSec / 60 );// % 60;
+            var seconds = totalSec % 60;
+
+            var result = (minutes) + ":" + (seconds  < 10 ? "0" + seconds : seconds);
+            $("#timer").html(result);
+        }, 100);
+    },
+
+    //--- Specific question handlers ---//
+    create_basic_question : function(j){
+        //Create q object
+        var new_q = $("#proto_q")
+            .clone()
+            .attr("id","none")
+            .prependTo($("#main"));
+
+        //Append data in the proper fields
+        $(".qhead", new_q).append('<h2 class="title">Who is <span class="celeb_name"><b>Harrison Ford</b></span>?</h2>');
+        $(".celeb_name", new_q).html(j.q_content.name);
+        console.log(j);
+        
+        $(".qbody", new_q).append('<div class="qanswer" data-correct=1><input type="radio" name="q'+j.id+'" value="'+j.q_content.right_answer.id+'"><span>'+j.q_content.right_answer.val+'</span></div>');
+        for( a in j.q_content.wrong_answers ){
+            $(".qbody", new_q).append('<div class="qanswer" data-correct=0><input type="radio" name="q'+j.id+'" value="'+j.q_content.wrong_answers[a].id+'"><span>'+j.q_content.wrong_answers[a].val+'</span></div>');
+        }
+
+        //Set up events
+        $(".qanswer", new_q)
+            .mouseover(function(){$(this).css("background-color","#ddd")})
+            .mouseout(function(){$(this).css("background-color","#fff")})
+            .click(mclbiq.answer_question)
+            .detach()
+            .sort( function(){ return ( Math.round( Math.random() ) - 0.5 ) } )
+            .appendTo($(".qbody", new_q));
+        
+        new_q.slideDown(500);
+    },
+    create_not_describe_question : function(j){
+        //Create q object
+        var new_q = $("#proto_q")
+            .clone()
+            .attr("id","none")
+            .prependTo($("#main"));
+
+        //Append data in the proper fields
+        $(".qhead", new_q).append('<h2 class="title">Which of these does <i><b>not</b></i> describe <b>'+j.q_content.name+'</b>?</h2>');
+        
+        $(".qbody", new_q).append('<div class="qanswer" data-correct=1><input type="radio" name="q'+j.id+'" value="'+j.q_content.right_answer.id+'"><span>'+j.q_content.right_answer.val+'</span></div>');
+        for( a in j.q_content.wrong_answers ){
+            $(".qbody", new_q).append('<div class="qanswer" data-correct=0><input type="radio" name="q'+j.id+'" value="'+j.q_content.wrong_answers[a].id+'"><span>'+j.q_content.wrong_answers[a].val+'</span></div>');
+        }
+
+        //Set up events
+        $(".qanswer", new_q)
+            .mouseover(function(){$(this).css("background-color","#ddd")})
+            .mouseout(function(){$(this).css("background-color","#fff")})
+            .click(mclbiq.answer_question)
+            .detach()
+            .sort( function(){ return ( Math.round( Math.random() ) - 0.5 ) } )
+            .appendTo($(".qbody", new_q));
+        
+        new_q.slideDown(500);
+    },
+    create_name_something_question : function(j){
+        //Create q object
+        var new_q = $("#proto_q")
+            .clone()
+            .attr("id","none")
+            .prependTo($("#main"));
+
+        //Append data in the proper fields
+        $(".qhead", new_q).append('<h2 class="title">Name something unique and noteworthy about <b>'+j.q_content.name+'</b>.</h2>');
+        $(".qbody", new_q).append('<textarea rows=3 name="q'+j.id+'"></textarea><div class="submit">Done</div><div class="submit">I really have no idea</div>');
+
+        //Set up events
+        $(".submit", new_q).click(mclbiq.answer_question);
+        
+        new_q.slideDown(500);
+    },
+    create_most_famous_question : function(j){
+        //Create q object
+        var new_q = $("#proto_q")
+            .clone()
+            .attr("id","none")
+            .prependTo($("#main"));
+
+        //Append data in the proper fields
+        $(".qhead", new_q).append('<h2 class="title">Which of these celebrities do you think is the <i><b>most</b></i> famous?</h2>');
+        
+        for( a in j.q_content.names ){
+            $(".qbody", new_q).append('<div class="qanswer" data-correct=0><input type="radio" name="q'+j.id+'" value="'+j.q_content.names[a].id+'"><span>'+j.q_content.names[a].val+'</span></div>');
+        }
+
+        //Set up events
+        $(".qanswer", new_q)
+            .mouseover(function(){$(this).css("background-color","#ddd")})
+            .mouseout(function(){$(this).css("background-color","#fff")})
+            .click(mclbiq.answer_question)
+            .detach()
+            .sort( function(){ return ( Math.round( Math.random() ) - 0.5 ) } )
+            .appendTo($(".qbody", new_q));
+        
+        new_q.slideDown(500);
+    },
+    create_pick_topic_question : function(j){
+        //Create q object
+        var new_q = $("#proto_q")
+            .clone()
+            .attr("id","none")
+            .prependTo($("#main"));
+
+        //Append data in the proper fields
+        $(".qhead", new_q).append('<h2 class="title">Pick a topic for your next set of questions</h2>');
+        
+        for( a in j.q_content.topics ){
+            $(".qbody", new_q).append('<div class="qanswer" data-correct=0><input type="radio" name="q'+j.id+'" value="'+j.q_content.topics[a].id+'"><span>'+j.q_content.topics[a].val+'</span></div>');
+        }
+
+        //Set up events
+        $(".qanswer", new_q)
+            .mouseover(function(){$(this).css("background-color","#ddd")})
+            .mouseout(function(){$(this).css("background-color","#fff")})
+            .click(mclbiq.answer_question)
+            .detach()
+            .sort( function(){ return ( Math.round( Math.random() ) - 0.5 ) } )
+            .appendTo($(".qbody", new_q));
+        
+        new_q.slideDown(500);
     }
-}
+};
 
 $().ready(mclbiq.begin_quiz);
 </script>

@@ -801,30 +801,12 @@ wrongs = [
 	'Sorry'
 ];
 
-cute_adjs = [
-	'darling',
-	'adorable',
-	'huggable',
-	'dainty',
-	'fuzzy',
-	'cutesy',
-	'charming',
-	'fluffy',
-	'shiny',
-	'cuddly',
-	'sweet',
-	'plush',
-	'kissy',
-	'snuggly'
-];
-
-cute_nouns = [
-	'kitten',
-	'marshmallow',
-	'bubbles',
-	'cinnamon',
-	'pony',
-	'gumdrop',
+topics = [
+    "Politics",
+    "History",
+    "Movies",
+    "Science",
+    "Sports"
 ];
 
 famous_adjs = [
