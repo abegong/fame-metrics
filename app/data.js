@@ -864,7 +864,7 @@ famous_adjs = [
 	'imposing',
 	'lionized',
 	'mighty',
-	'much-publicized',
+	'publicized',
 	'noble',
 	'noteworthy',
 	'peerless',

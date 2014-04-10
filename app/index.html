@@ -184,11 +184,11 @@ var mclbiq = {
         new_q.slideDown(500);
     },
     next_question : function(j){
-//        mclbiq.create_basic_question(j);
+        mclbiq.create_basic_question(j);
 //        mclbiq.create_name_something_question(j);
 //        mclbiq.create_bkwd_question(j);
 //        mclbiq.create_most_famous_question(j);
-        mclbiq.create_pick_topic_question(j);
+//        mclbiq.create_pick_topic_question(j);
     },
     answer_question : function(){
         $("input", this).attr("checked", true);
@@ -243,11 +243,7 @@ $().ready(mclbiq.begin_quiz);
 </div>
 <div id="score-box">
     <span id="score-num">0</span> of <span id="score-denom">0</span> correct<br/>
-    <span id="timer" style="float:right">0:00</span><br/>
-<!--
-    &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
--->
-<!--    <span id="timer">0:00</span><br/>-->
+    <span id="timer">0:00</span><br/>
     <span id="session-name" class="session-name"></span>
 </div>
 <div id="main">
