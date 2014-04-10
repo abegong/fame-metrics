@@ -1,0 +1,150 @@
+@import "http://fonts.googleapis.com/css?family=Open+Sans:300,700&subset=latin,greek-ext,cyrillic-ext,greek,vietnamese,cyrillic,latin-ext";
+body{
+    font-family: "Open Sans","Helvetica Neue","Helvetica",Arial,Verdana,sans-serif;
+	font-size:14px;
+	font-weight:100;
+}
+
+#main{
+	width:480px;
+	margin:0 auto;
+}
+#header{
+    margin: 0px;
+    padding: 20px;
+	-webkit-border-radius: 4px;	
+	   -moz-border-radius: 4px;	
+			border-radius: 4px;
+    background-color: #fff;
+    position: relative;
+}
+
+#head-title{
+    font-size: 18pt;
+}
+
+#score-box{
+    float:right;
+    font-size:16pt;
+}
+
+/*****************************************************************************/
+
+.question{
+    margin: 14px;
+    padding: 20px;
+	-webkit-border-radius: 4px;	
+	   -moz-border-radius: 4px;	
+			border-radius: 4px;
+    background-color: #fff;
+    position: relative;
+}
+.qanswer{
+    cursor: pointer;
+    margin-left:30px;
+    margin-right:30px;
+	-webkit-border-radius: 4px;	
+	   -moz-border-radius: 4px;	
+			border-radius: 4px;
+    padding: 3px;
+/*	opacity:0.01;*/
+}
+.qwrong,
+.qright{
+    display: block;
+    position: absolute;
+    top: 40px;
+    right: 10px;
+}
+
+/*****************************************************************************/
+
+h2{
+	margin: 0.2em 0 20 0;
+    font-weight: 200;
+}
+.celeb_name{
+    font-weight: 700;
+}
+label {
+	font-size: 1em;
+	display: block;
+	margin-bottom: 3px;
+	clear: both;
+}
+
+/* Radio & checkbox */
+input[type=checkbox],
+input[type=radio]{
+	z-index:1;
+	position:relative;
+	height: 19px;
+	width: 19px;
+	margin: 5px 18px 5px 10px;
+	vertical-align:middle;
+}
+input[type=checkbox]+span,
+input[type=radio]+span{
+	height: 19px;
+	padding-left: 6px;
+    padding-right: 6px;
+	z-index:0;
+	position:relative;
+	display:inline-block;
+	left:-19px;
+	top:0px;
+/*	background:url(./check-radio-bg.png) no-repeat 0 0;*/
+	-webkit-border-radius: 4px;	
+	   -moz-border-radius: 4px;	
+			border-radius: 4px;
+
+}
+
+input[type=text],
+input[type=password],
+textarea {
+	width: 96%;
+	padding: 6px 2%;
+	margin-left:-1px;
+
+	font-size: 1em;
+	font-weight: normal;
+	padding: 6px;
+	color: #777;
+	/*background-image: -ms-linear-gradient(top, #444444, #999999); /* IE10 */
+	/*filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#22000000', EndColorStr='#00FFFFFF'); /* IE6�IE9 */
+	/*background-image: -webkit-gradient(linear, left top, left bottom, from(#444444), to(#999999)); /* Saf4+, Chrome */
+	background-image: -moz-linear-gradient(top, rgba(0,0,0,0.18), rgba(0,0,0,0) 4px, rgba(0,0,0,0) ); /* FF3.6 */
+	background-image: -webkit-linear-gradient(top, rgba(0,0,0,0.18), rgba(0,0,0,0) 4px, rgba(0,0,0,0) ); /* Chrome 10+, Saf5.1+ */
+	background-image: -o-linear-gradient(top, rgba(0,0,0,0.18), rgba(0,0,0,0) 4px, rgba(0,0,0,0) ); /* Opera 11.10+ */
+	background-image: linear-gradient(top, rgba(0,0,0,0.18), rgba(0,0,0,0) 5px, rgba(0,0,0,0) );
+	border-top: solid 1px #aaa;
+	border-left: solid 1px #aaa;
+	border-bottom: solid 1px #ccc;
+	border-right: solid 1px #ccc;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	outline: 0;
+}
+
+input[type=text]:focus,
+input[type=password]:focus,
+textarea:focus {
+	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+	-moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+	border-color: rgba(82, 168, 236, 0.8);
+	/*background-image: -ms-linear-gradient(top, #444444, #999999); /* IE10 */
+	/*filter: progid:DXImageTransform.Microsoft.gradient(startColorStr='#22000000', EndColorStr='#00FFFFFF'); /* IE6�IE9 */
+	/*background-image: -webkit-gradient(linear, left top, left bottom, from(#444444), to(#999999)); /* Saf4+, Chrome */
+	background-image: -moz-linear-gradient(top, rgba(0,0,0,0.19), rgba(0,0,0,0) 5px, rgba(0,0,0,0) ); /* FF3.6 */
+	background-image: -webkit-linear-gradient(top, rgba(0,0,0,0.19), rgba(0,0,0,0) 5px, rgba(0,0,0,0) ); /* Chrome 10+, Saf5.1+ */
+	background-image: -o-linear-gradient(top, rgba(0,0,0,0.19), rgba(0,0,0,0) 5px, rgba(0,0,0,0) ); /* Opera 11.10+ */
+	background-image: linear-gradient(top, rgba(0,0,0,0.19), rgba(0,0,0,0) 5px, rgba(0,0,0,0) );
+	transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
+}
+
+
+
+

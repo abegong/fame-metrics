@@ -1,0 +1,153 @@
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="style.css" type="text/css">
+    <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="jQueryRotate.js"></script>
+    <script type="text/javascript" src="jquery.color.js"></script>
+    <script type='text/javascript' src='data.js'></script>
+    <!--<script type='text/javascript' src='https://cdn.firebase.com/js/client/1.0.11/firebase.js'></script>-->
+    <script>
+//var fb = new Firebase('https://fame-meter.firebaseio.com/celebs');
+// myRootRef.set('Hello World!');
+// fb.on('value', function(snapshot) {
+//   console.log(snapshot.val());
+//   alert('fred’s first name is ' + snapshot.val());
+// });
+        function choose(A){
+            return A[Math.floor(Math.random()*A.length)];
+        };
+        function gen_q_json(){
+            return {
+                id: Math.floor(Math.random()*10000),
+                name: choose(names),
+                right_answer: {id: 1, val: choose(tags)},
+                wrong_answers: [
+                    {id: 2, val: choose(tags)},
+                    {id: 3, val: choose(tags)},
+                    {id: 4, val: choose(tags)},
+                    {id: 5, val: choose(tags)}
+                ]
+            }
+        }
+        function gen_q(j){
+            var new_q = $("#proto_q")
+                .clone()
+                .attr("id","none")
+                .prependTo($("#main"));
+            
+            $(".celeb_name", new_q).html(j.name);
+            $(".qbody", new_q).append('<div class="qanswer" data-correct=1><input type="radio" name="q'+j.id+'" value="'+j.right_answer.id+'"><span>'+j.right_answer.val+'</span></div>');
+            for( a in j.wrong_answers ){
+                $(".qbody", new_q).append('<div class="qanswer" data-correct=0><input type="radio" name="q'+j.id+'" value="'+j.wrong_answers[a].id+'"><span>'+j.wrong_answers[a].val+'</span></div>');
+            }
+            
+            $(".qright", new_q)
+                .html("<h3>"+choose(rights)+"</h3>")
+//                .ccs("transform","rotate(20deg)")
+                .hide()
+                .rotate(40);
+            $(".qwrong", new_q)
+                .html("<h3>"+choose(wrongs)+"</h3>")
+                .hide();
+
+            $(".qanswer", new_q).mouseover(function(){$(this).css("background-color","#ddd")});
+            $(".qanswer", new_q).mouseout(function(){$(this).css("background-color","#fff")});
+
+            $(".qanswer", new_q).click(function(){
+                $("input", this).attr("checked", true);
+
+                var parent = $(this).closest(".question");
+                if(Math.random()>.5){
+                    var bgcolor = "#cfc";
+                    $("#score-num").html( parseInt($("#score-num").html())+1 );
+                } else {
+                    var bgcolor = "#fcc";
+                }
+                $("#score-denom").html( parseInt($("#score-denom").html())+1 );
+
+                parent.animate(
+                    {'background-color': bgcolor},
+                    function(){
+                        gen_q(gen_q_json());
+                    }
+                );
+
+                $(".qanswer", parent)
+                    .off('mouseover')
+                    .off('mouseout')
+                    .off('click')
+                    .css("cursor", "default")
+                    .not($(this))
+                        .animate(
+                            {"background-color": "transparent"},
+                            10
+                        );
+
+                $(".qanswer[data-correct=1]", parent).css("font-weight","Bold");
+
+
+                $("input[type=radio]", parent)
+                    .css('cursor', 'default')
+                    .animate({'opacity': 0.01});
+
+            });
+            
+            new_q.slideDown(500);
+        }
+        
+        $().ready(function(){
+            session_name = choose(famous_adjs)+'-'+choose(famous_nouns)+'-'+Math.floor(1000+9000*Math.random());
+            $("#proto_q").hide();
+            $(".session-name").html(session_name);
+
+            gen_q(gen_q_json());
+
+            var start = new Date().getTime();
+
+            window.setInterval(function()
+            {
+                var time = new Date().getTime() - start;
+
+                var totalSec = Math.floor(time / 1000);
+                var minutes = parseInt( totalSec / 60 );// % 60;
+                var seconds = totalSec % 60;
+
+                var result = (minutes) + ":" + (seconds  < 10 ? "0" + seconds : seconds);
+                $("#timer").html(result);
+            }, 100);
+
+//            $(window).bind('beforeunload', function(){
+//                return 'Are you sure you want to quit?\nIf you go, make sure to write down this code: '+session_name+' so that you can get your score later.'
+//            });
+        
+        })
+    </script>
+</head>
+<body style="background-color:#EBEBEB">
+<div id="header">
+    <div id="score-box"><span class="session-name"></span> | <span id="score-num">0</span> of <span id="score-denom">0</span> correct &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; <span id="timer">0:00</span></div>
+    <span id="head-title"><b>Test your celebrity IQ</b></span>
+</div>
+<div id="main">
+<form action="" title="">
+  <div id="intro_q" class="question">
+      <h2><b>Your code: <span class="session-name">famous-bigwig-3024</span></b></h2>
+      We don't do logins yet, but we'll remember your game. Write down this code (<span class="session-name">famous-bigwig-3024</span>) so you can get your score later.
+  </div>
+  <div id="proto_q" class="question">
+    <div class="qhead"><h2 class="title">Who is <span class="celeb_name"><b>Harrison Ford</b></span>?</h2></div>
+    <div class="qbody"></div>
+    <div class="qright">
+        <h3>Correct!</h3>
+        <div class="qbettername">
+            <label class="title">Can you think of a better description for <b class="celeb_name">Harrison Ford</b>?</label>
+            <input type="text" name="field1">
+        </div>
+    </div>
+    <div class="qwrong"><h3>Nope.</h3></div>
+  </div>
+</form>
+</div>
+</body>
+</html>
