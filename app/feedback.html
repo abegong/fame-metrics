@@ -2,7 +2,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <link rel="stylesheet" href="style.css" type="text/css">
-    <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
     <title>My Celebrity IQ : Feedback</title>
 </head>
 <body>
@@ -13,11 +13,31 @@
 </div>
 <div id="main">
 <form action="" title="">
-  <div id="intro_q" class="question">
-      <h2><b>Your code: <span class="session-name">famous-bigwig-3024</span></b></h2>
-      We don't do logins yet, but we'll remember your game. Write down this code (<span class="session-name">famous-bigwig-3024</span>) so you can get your score later.
+  <div id="feedback" class="question">
+    <div id="answered" style="display:none">
+        <h1>Thanks!</h1>
+        <p>We'll put our best interns to work on that right away.</p>
+        <p>In the meantime, do you want to <a href="play.html">play some more</a>?</p>
+    </div>
+
+    <div id="ask">
+      <h1>We crave feedback</h1>
+      Questions? Comments? What else should MyCelebrityIQ do?
+      <br/><br/>
+      Email: <input type="text" style="width:60%" value="myemail@service.com"></input>
+      <textarea rows=5></textarea>
+      <div class="submit-box"><div class="submit">Submit</div></div>
+    </div>
   </div>
 </form>
 </div>
+<script type="text/javascript">
+$().ready(function(){
+    $(".submit").click(function(){
+        $("#ask").slideUp();
+        $("#answered").slideDown();
+    });
+});
+</script>
 </body>
 </html>

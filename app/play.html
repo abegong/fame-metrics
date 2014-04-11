@@ -17,7 +17,7 @@
 <div id="main">
 <form action="" title="">
   <div id="intro_q" class="question">
-      <h2><b>Your code: <span class="session-name">famous-bigwig-3024</span></b></h2>
+      <h1>Your code: <span class="session-name">famous-bigwig-3024</span></h1>
       We don't do logins yet, but we'll remember your game. Write down this code (<span class="session-name">famous-bigwig-3024</span>) so you can get your score later.
   </div>
     
@@ -46,8 +46,9 @@ var choose = function(A){
 
 var mock_fb = {
     get_question : function(list_id){
-//        var q_type = choose(['basic', 'not_describe', 'name_something', 'most_famous', 'pick_topic']);
-        var q_type = choose(['name_something']);
+        var q_type = choose(['basic', 'not_describe', 'name_something', 'most_famous', 'pick_topic']);
+//        var q_type = choose(['name_something']);
+        var q_type = choose(['basic', 'basic', 'basic', 'basic', 'basic', 'basic', 'basic', 'basic', 'basic', 'not_describe', 'name_something', 'most_famous', 'pick_topic']);
 
         if ( q_type=='basic'){ q_content = mock_fb.create_basic_question(); }
         else if ( q_type=='not_describe' ){ q_content = mock_fb.create_not_describe_question(); }
@@ -63,9 +64,10 @@ var mock_fb = {
         }
     },
     create_basic_question : function(){
+        var i = Math.floor(Math.random()*names.length);
         return{
-            name: choose(names),
-            right_answer: {id: 1, val: choose(tags)},
+            name: names[i],
+            right_answer: {id: 1, val: tags[i]},
             wrong_answers: [
                 {id: 2, val: choose(tags)},
                 {id: 3, val: choose(tags)},
@@ -123,6 +125,7 @@ var mclbiq = {
     begin_quiz : function(){
         mclbiq.set_session_name();
         mclbiq.start_timer();
+        $("#score-box").hide().slideDown();
         mclbiq.next_question(mock_fb.get_question());
 
     //            $(window).bind('beforeunload', function(){
@@ -165,10 +168,15 @@ var mclbiq = {
         //Bold the correct answer
         $(".qanswer[data-correct=1]", parent).css("font-weight","Bold");
 
-        //Fade out the radio buttons 
+        //Fade out the radio buttons
         $("input[type=radio]", parent)
             .css('cursor', 'default')
             .animate({'opacity': 0.01});
+
+        //Fade out any submit buttons
+        $(".submit", parent)
+            .css('cursor', 'default')
+            .animate({'background-color': '#ddd'});
 
         //Change the background color to red or green, and bring in the next question
         parent.animate(
@@ -262,8 +270,10 @@ var mclbiq = {
             .prependTo($("#main"));
 
         //Append data in the proper fields
-        $(".qhead", new_q).append('<h2 class="title">Name something unique and noteworthy about <b>'+j.q_content.name+'</b>.</h2>');
-        $(".qbody", new_q).append('<textarea rows=3 name="q'+j.id+'"></textarea><div class="submit">Done</div><div class="submit">I really have no idea</div>');
+        $(".qhead", new_q)
+            .append('<h2 class="title">Name something unique and noteworthy about <b>'+j.q_content.name+'</b>.</h2>')
+            .append('<textarea rows=3 name="q'+j.id+'"></textarea>')
+            .append('<div class="submit-box"><div class="submit">I really have no idea</div><div class="submit">Done</div></div>');
 
         //Set up events
         $(".submit", new_q).click(mclbiq.answer_question);
