@@ -34,35 +34,34 @@
 <script type="text/javascript" src="js/jquery.color.js"></script>
 <script type="text/javascript" src="js/jquery.cookie.js"></script>
 <script type='text/javascript' src='js/data.js'></script>
-<!--<script type='text/javascript' src='https://cdn.firebase.com/js/client/1.0.11/firebase.js'></script>-->
+<script type='text/javascript' src='https://cdn.firebase.com/js/client/1.0.11/firebase.js'></script>
 <script>
-//var fb = new Firebase('https://fame-meter.firebaseio.com/celebs');
-// myRootRef.set('Hello World!');
-// fb.on('value', function(snapshot) {
-//   console.log(snapshot.val());
-//   alert('fred’s first name is ' + snapshot.val());
-// });
+//fb.on('value', function(snapshot) {
+//    console.log(snapshot.val());
+//    alert('fred’s first name is ' + snapshot.val());
+//});
+
 var choose = function(A){
     return A[Math.floor(Math.random()*A.length)];
 };
 
 var mock_fb = {
-    get_question : function(q_type, list_id){
-        if ( q_type=='basic'){ q_content = mock_fb.create_basic_question(list_id); }
-        else if ( q_type=='not_describe' ){ q_content = mock_fb.create_not_describe_question(list_id); }
-        else if ( q_type=='name_something' ){ q_content = mock_fb.create_name_something_question(list_id); }
-        else if ( q_type=='most_famous' ){ q_content = mock_fb.create_most_famous_question(list_id); }
+    get_question : function(q_type, topic){
+        if ( q_type=='basic'){ q_content = mock_fb.create_basic_question(topic); }
+        else if ( q_type=='not_describe' ){ q_content = mock_fb.create_not_describe_question(topic); }
+        else if ( q_type=='name_something' ){ q_content = mock_fb.create_name_something_question(topic); }
+        else if ( q_type=='most_famous' ){ q_content = mock_fb.create_most_famous_question(topic); }
         else if ( q_type=='pick_topic' ){ q_content = mock_fb.create_pick_topic_question(); }
         else { q_content = {}}
         
         return {
             id: Math.floor(Math.random()*10000),
             q_type : q_type,
-            q_list : list_id,
+            q_topic : topic,
             q_content : q_content,
         }
     },
-    create_basic_question : function(list_id){
+    create_basic_question : function(){
         var i = Math.floor(Math.random()*names.length);
         return{
             name: names[i],
@@ -120,6 +119,7 @@ var mock_fb = {
 var mclbiq = {
     session_obj : null,
     q_stack : Array(),
+//    fb : new Firebase('https://fame-meter.firebaseio.com/answers'),
     
     //--- Major API events ---//
     begin_quiz : function(){
@@ -128,24 +128,25 @@ var mclbiq = {
         
         mclbiq.get_question_batch(5, '');
         //Start off with two extra basic questions on the stack
-        mclbiq.q_stack.push(mock_fb.get_question('basic', ''));
-        mclbiq.q_stack.push(mock_fb.get_question('basic', ''));
-
+        mclbiq.q_stack.push(mock_fb.get_question('basic', 'movies'));
+        mclbiq.q_stack.push(mock_fb.get_question('pick_topic', 'history'));
+        mclbiq.q_stack.push(mock_fb.get_question('basic', 'politics'));
+        
         mclbiq.next_question();
-        $("#score-box").hide().slideDown();
+        $("#score-box").hide();//.slideDown();
 
     //            $(window).bind('beforeunload', function(){
     //                return 'Are you sure you want to quit?\nIf you go, make sure to write down this code: '+session_name+' so that you can get your score later.'
     //            });
     },
-    get_question_batch : function(size, list){
+    get_question_batch : function(size, topic){
         for( var i=0; i<size-2; i++ ){
             var q_type = choose(['basic', 'basic', 'basic', 'basic', 'basic', 'basic', 'not_describe', 'not_describe', 'name_something', 'most_famous', 'most_famous', 'pick_topic']);
-            mclbiq.q_stack.push(mock_fb.get_question(q_type, list));
+            mclbiq.q_stack.push(mock_fb.get_question(q_type, topic));
         }
         //Every batch starts with at least two basic questions
-        mclbiq.q_stack.push(mock_fb.get_question('basic', list));
-        mclbiq.q_stack.push(mock_fb.get_question('basic', list));
+        mclbiq.q_stack.push(mock_fb.get_question('basic', topic));
+        mclbiq.q_stack.push(mock_fb.get_question('basic', topic));
     },
     next_question : function(){
         if( mclbiq.q_stack.length==0 ){
@@ -159,17 +160,17 @@ var mclbiq = {
             .data("q-type", q_json.q_type)
             .prependTo($("#main"));
 
+        if( q_json.q_topic != '' ){
+            $('<img src="img/'+q_json.q_topic.toLowerCase()+'.png"></img>').prependTo($(".qhead", new_q));
+        }
+
         if ( q_json.q_type=='basic'){ mclbiq.create_basic_question(q_json, new_q); }
         else if ( q_json.q_type=='not_describe' ){ mclbiq.create_not_describe_question(q_json, new_q); }
         else if ( q_json.q_type=='name_something' ){ mclbiq.create_name_something_question(q_json, new_q); }
         else if ( q_json.q_type=='most_famous' ){ mclbiq.create_most_famous_question(q_json, new_q); }
         else if ( q_json.q_type=='pick_topic' ){ mclbiq.create_pick_topic_question(q_json, new_q); }
 //        else { q_content = {}}
-        
-        if( q_json.q_list != '' ){
-            $('<img src="img/'+q_json.q_list.toLowerCase()+'.png"></img>').prependTo($(".qhead", new_q));
-        }
-        
+                
         $(".qanswer", new_q)
             .detach()
             .sort( function(){ return ( Math.round( Math.random() ) - 0.5 ) } )
@@ -335,6 +336,9 @@ var mclbiq = {
         for( a in j.q_content.topics ){
             $(".qbody", new_q).append('<div class="qanswer"><input type="radio" name="q'+j.id+'" value="'+j.q_content.topics[a].id+'"><span>'+j.q_content.topics[a].val+'</span></div>');
         }
+        
+        //Suppress img field
+        $(".qhead img").hide();
     }
 };
 

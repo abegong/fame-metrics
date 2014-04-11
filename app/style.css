@@ -83,6 +83,9 @@ body{
 .qhead img{
     float:right;
     width:60px;
+    margin-top: -15px;
+    margin-right: -10px;
+/*    border: 2px solid black;*/
 }
 
 .submit-box{
