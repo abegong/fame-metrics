@@ -129,7 +129,7 @@ var mclbiq = {
         mclbiq.get_question_batch(5, '');
         //Start off with two extra basic questions on the stack
         mclbiq.q_stack.push(mock_fb.get_question('basic', ''));
-        mclbiq.q_stack.push(mock_fb.get_question('pick_topic', ''));
+        mclbiq.q_stack.push(mock_fb.get_question('basic', ''));
 
         mclbiq.next_question();
         $("#score-box").hide().slideDown();
@@ -140,7 +140,7 @@ var mclbiq = {
     },
     get_question_batch : function(size, list){
         for( var i=0; i<size-2; i++ ){
-            var q_type = choose(['basic', 'basic', 'basic', 'basic', 'basic', 'basic', 'basic', 'not_describe', 'name_something', 'most_famous', 'pick_topic']);
+            var q_type = choose(['basic', 'basic', 'basic', 'basic', 'basic', 'basic', 'not_describe', 'not_describe', 'name_something', 'most_famous', 'most_famous', 'pick_topic']);
             mclbiq.q_stack.push(mock_fb.get_question(q_type, list));
         }
         //Every batch starts with at least two basic questions
@@ -167,7 +167,7 @@ var mclbiq = {
 //        else { q_content = {}}
         
         if( q_json.q_list != '' ){
-            $('<img src="img/'+q_json.q_list+'.png"></img>').prependTo($(".qhead", new_q));
+            $('<img src="img/'+q_json.q_list.toLowerCase()+'.png"></img>').prependTo($(".qhead", new_q));
         }
         
         $(".qanswer", new_q)
@@ -176,15 +176,15 @@ var mclbiq = {
             .appendTo($(".qbody", new_q));
                 
         new_q.slideDown(500);//, function(){
-            //Set up events
-            $(".qanswer", new_q)
-                .mouseover(function(){$(this).css("background-color","#ddd")})
-                .mouseout(function(){$(this).css("background-color","#fff")})
-                .click(mclbiq.answer_question);
 
-            //Set up events
-            $(".submit", new_q)
-                .click(mclbiq.answer_question);    
+        //Set up events
+        $(".qanswer", new_q)
+            .mouseover(function(){$(this).css("background-color","#ddd")})
+            .mouseout(function(){$(this).css("background-color","#fff")})
+            .click(mclbiq.answer_question);
+
+        $(".submit", new_q)
+            .click(mclbiq.answer_question);    
         //});
         
         //Remove questions more than 20 slides ago
