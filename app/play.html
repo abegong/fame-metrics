@@ -48,6 +48,7 @@ var choose = function(A){
 var mock_fb = {
     get_question : function(q_type, topic){
         if ( q_type=='basic'){ q_content = mock_fb.create_basic_question(topic); }
+        else if ( q_type=='which_celeb' ){ q_content = mock_fb.create_which_celeb_question(topic); }
         else if ( q_type=='not_describe' ){ q_content = mock_fb.create_not_describe_question(topic); }
         else if ( q_type=='name_something' ){ q_content = mock_fb.create_name_something_question(topic); }
         else if ( q_type=='most_famous' ){ q_content = mock_fb.create_most_famous_question(topic); }
@@ -71,6 +72,19 @@ var mock_fb = {
                 {id: 3, val: choose(tags)},
                 {id: 4, val: choose(tags)},
                 {id: 5, val: choose(tags)}
+            ]
+        }
+    },
+    create_which_celeb_question : function(){
+        var i = Math.floor(Math.random()*names.length);
+        return{
+            clue: tags[i],
+            right_answer: {id: 1, val: names[i]},
+            wrong_answers: [
+                {id: 2, val: choose(names)},
+                {id: 3, val: choose(names)},
+                {id: 4, val: choose(names)},
+                {id: 5, val: choose(names)}
             ]
         }
     },
@@ -128,9 +142,8 @@ var mclbiq = {
         
         mclbiq.get_question_batch(5, '');
         //Start off with two extra basic questions on the stack
-        mclbiq.q_stack.push(mock_fb.get_question('basic', 'movies'));
-        mclbiq.q_stack.push(mock_fb.get_question('pick_topic', 'history'));
-        mclbiq.q_stack.push(mock_fb.get_question('basic', 'politics'));
+        mclbiq.q_stack.push(mock_fb.get_question('basic'));
+        mclbiq.q_stack.push(mock_fb.get_question('which_celeb'));
         
         mclbiq.next_question();
         $("#score-box").hide();//.slideDown();
@@ -141,7 +154,7 @@ var mclbiq = {
     },
     get_question_batch : function(size, topic){
         for( var i=0; i<size-2; i++ ){
-            var q_type = choose(['basic', 'basic', 'basic', 'basic', 'basic', 'basic', 'not_describe', 'not_describe', 'name_something', 'most_famous', 'most_famous', 'pick_topic']);
+            var q_type = choose(['basic', 'basic', 'basic', 'basic', 'basic', 'basic', /*'not_describe', 'not_describe',*/ 'name_something', 'most_famous', 'most_famous', 'pick_topic']);
             mclbiq.q_stack.push(mock_fb.get_question(q_type, topic));
         }
         //Every batch starts with at least two basic questions
@@ -160,12 +173,13 @@ var mclbiq = {
             .data("q-type", q_json.q_type)
             .prependTo($("#main"));
 
-        if( q_json.q_topic != '' ){
+        if((q_json.q_topic != '') & (q_json.q_topic != null)){
             $('<img src="img/'+q_json.q_topic.toLowerCase()+'.png"></img>').prependTo($(".qhead", new_q));
         }
 
         if ( q_json.q_type=='basic'){ mclbiq.create_basic_question(q_json, new_q); }
         else if ( q_json.q_type=='not_describe' ){ mclbiq.create_not_describe_question(q_json, new_q); }
+        else if ( q_json.q_type=='which_celeb' ){ mclbiq.create_which_celeb_question(q_json, new_q); }
         else if ( q_json.q_type=='name_something' ){ mclbiq.create_name_something_question(q_json, new_q); }
         else if ( q_json.q_type=='most_famous' ){ mclbiq.create_most_famous_question(q_json, new_q); }
         else if ( q_json.q_type=='pick_topic' ){ mclbiq.create_pick_topic_question(q_json, new_q); }
@@ -300,7 +314,18 @@ var mclbiq = {
             $(".qbody", new_q).append('<div class="qanswer" data-correct=0><input type="radio" name="q'+j.id+'" value="'+j.q_content.wrong_answers[a].id+'"><span>'+j.q_content.wrong_answers[a].val+'</span></div>');
         }
     },
-    
+
+    create_which_celeb_question : function(j, new_q){
+        //Append data in the proper fields
+        $(".qhead", new_q).append('<h2 class="title">Which celebrity is best described by the phrase <b>"'+j.q_content.clue+'"</b>?</h2>');
+        
+        $(".qbody", new_q).append('<div class="qanswer" data-correct=1><input type="radio" name="q'+j.id+'" value="'+j.q_content.right_answer.id+'"><span>'+j.q_content.right_answer.val+'</span></div>');
+        for( a in j.q_content.wrong_answers ){
+            $(".qbody", new_q).append('<div class="qanswer" data-correct=0><input type="radio" name="q'+j.id+'" value="'+j.q_content.wrong_answers[a].id+'"><span>'+j.q_content.wrong_answers[a].val+'</span></div>');
+        }
+
+    },
+
     create_not_describe_question : function(j, new_q){
         //Append data in the proper fields
         $(".qhead", new_q).append('<h2 class="title">Which of these does <i><b>not</b></i> describe <b>'+j.q_content.name+'</b>?</h2>');
