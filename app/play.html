@@ -173,10 +173,10 @@ var mclbiq = {
         mclbiq.get_question_batch(5, '');
         //Start off with two extra basic questions on the stack
         mclbiq.q_stack.push(db_handler.get_question('basic'));
-        mclbiq.q_stack.push(db_handler.get_question('basic', 'sports'));
+        mclbiq.q_stack.push(db_handler.get_question('basic'));
         
         mclbiq.next_question();
-        $("#score-box").hide();//.slideDown();
+        $("#score-box").hide().slideDown();
 
     //            $(window).bind('beforeunload', function(){
     //                return 'Are you sure you want to quit?\nIf you go, make sure to write down this code: '+session_name+' so that you can get your score later.'
