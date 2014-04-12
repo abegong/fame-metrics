@@ -80,7 +80,9 @@ if 0:
 	history_df = D[(D.birthyear < 1900) & (D.fame>100000)]
 	convert_df_to_list(history_df, 'data/lists/history.jl')
 
-movie_categories = ['Actor', 'Film Director', 'Film/TV Producer', 'Screenwriter', 'Cinematographer']
-movie_df = D[D.occupation.map( lambda x: x in movie_categories ) & (D.fame>200000)]
-convert_df_to_list(movie_df, 'data/lists/movies.jl')
+	movie_categories = ['Actor', 'Film Director', 'Film/TV Producer', 'Screenwriter', 'Cinematographer']
+	movie_df = D[D.occupation.map( lambda x: x in movie_categories ) & (D.fame>200000)]
+	convert_df_to_list(movie_df, 'data/lists/movies.jl')
 
+	generic_df = D[D.occupation.map( lambda x: x in movie_categories ) & (D.fame>300000)]
+	convert_df_to_list(generic_df, 'data/lists/generic.jl')
