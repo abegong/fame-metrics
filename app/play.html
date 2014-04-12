@@ -65,6 +65,12 @@ var db_handler = {
     },
     
     get_question : function(q_type, topic){
+        //A little bit of error handling for topics...
+        if( topic ){
+            if( topic.toLowerCase ){
+                topic = topic.toLowerCase();
+            }
+        }
         if( topic in db_handler.topic_lists ){
             var topic_list = db_handler.topic_lists[topic];
         } else {
@@ -87,20 +93,19 @@ var db_handler = {
         }
     },
     
-    create_basic_question : function(topic_list){
-        var i = Math.floor(Math.random()*topic_list.length);
-        console.log(topic_list[i]);
+    create_basic_question : function(topic){
+        var i = Math.floor(Math.random()*topic.length);
         return{
-            name: topic_list[i].name,
+            name: topic[i].name,
             right_answer: {
-                id: topic_list[i].index,
-                val: choose(topic_list[i].tags)
+                id: topic[i].index,
+                val: choose(topic[i].tags)
             },
             wrong_answers: [
-                {id: 2, val: choose(choose(topic_list).tags)},
-                {id: 3, val: choose(choose(topic_list).tags)},
-                {id: 4, val: choose(choose(topic_list).tags)},
-                {id: 5, val: choose(choose(topic_list).tags)}
+                {id: 2, val: choose(choose(topic).tags)},
+                {id: 3, val: choose(choose(topic).tags)},
+                {id: 4, val: choose(choose(topic).tags)},
+                {id: 5, val: choose(choose(topic).tags)}
             ]
         }
     },
@@ -173,7 +178,7 @@ var mclbiq = {
         mclbiq.get_question_batch(5, '');
         //Start off with two extra basic questions on the stack
         mclbiq.q_stack.push(db_handler.get_question('basic'));
-        mclbiq.q_stack.push(db_handler.get_question('basic'));
+        mclbiq.q_stack.push(db_handler.get_question('pick_topic'));
         
         mclbiq.next_question();
         $("#score-box").hide().slideDown();
@@ -182,15 +187,17 @@ var mclbiq = {
     //                return 'Are you sure you want to quit?\nIf you go, make sure to write down this code: '+session_name+' so that you can get your score later.'
     //            });
     },
+    
     get_question_batch : function(size, topic){
         for( var i=0; i<size-2; i++ ){
-            var q_type = choose(['basic', 'basic', 'basic', 'basic', 'basic', 'basic', /*'not_describe', 'not_describe',*/ 'name_something', 'most_famous', 'most_famous', 'pick_topic']);
+            var q_type = choose(['basic', 'basic', 'basic', 'basic', 'basic', /*'not_describe', 'not_describe',*/ 'which_celeb', 'name_something', 'most_famous', 'pick_topic']);
             mclbiq.q_stack.push(db_handler.get_question(q_type, topic));
         }
         //Every batch starts with at least two basic questions
         mclbiq.q_stack.push(db_handler.get_question('basic', topic));
         mclbiq.q_stack.push(db_handler.get_question('basic', topic));
     },
+    
     next_question : function(){
         if( mclbiq.q_stack.length==0 ){
             mclbiq.get_question_batch(5, '');
@@ -204,6 +211,7 @@ var mclbiq = {
             .prependTo($("#main"));
 
         if((q_json.q_topic != '') & (q_json.q_topic != null)){
+            console.log(q_json);
             $('<img src="img/'+q_json.q_topic.toLowerCase()+'.png"></img>').prependTo($(".qhead", new_q));
         }
 
@@ -240,6 +248,7 @@ var mclbiq = {
             });
 
     },
+    
     answer_question : function(){
         $("input", this).attr("checked", true);
         mclbiq.inc_session_cookie();
@@ -251,7 +260,9 @@ var mclbiq = {
         } else if( parent.data("q-type")=="pick_topic" ){
             var bgcolor = "#ccf";
             //Add questions to the stack
-            mclbiq.get_question_batch(10, $("span", this).html());
+            var topic = $("span", this).html();
+            console.log(topic);
+            mclbiq.get_question_batch(10, topic);
         } else if($(this).attr("data-correct")==1){
             var bgcolor = "#cfc";
             $("#score-num").html( parseInt($("#score-num").html())+1 );
