@@ -29,12 +29,17 @@
     <div class="qbody"></div>
   </div>
 </div>
+
 <script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
 <script type="text/javascript" src="js/jQueryRotate.js"></script>
 <script type="text/javascript" src="js/jquery.color.js"></script>
 <script type="text/javascript" src="js/jquery.cookie.js"></script>
-<script type='text/javascript' src='js/data.js'></script>
 
+<script type='text/javascript' src='https://cdn.firebase.com/js/client/1.0.11/firebase.js'></script>
+
+<script type='text/javascript' src='js/underscore-min.js'></script>
+
+<script type='text/javascript' src='js/data.js'></script>
 <script type='text/javascript' src='data/generic.js'></script>
 <script type='text/javascript' src='data/history.js'></script>
 <script type='text/javascript' src='data/politics.js'></script>
@@ -42,16 +47,15 @@
 <script type='text/javascript' src='data/movies.js'></script>
 <script type='text/javascript' src='data/science.js'></script>
 
-<script type='text/javascript' src='https://cdn.firebase.com/js/client/1.0.11/firebase.js'></script>
 <script>
 //fb.on('value', function(snapshot) {
 //    console.log(snapshot.val());
 //    alert('fred’s first name is ' + snapshot.val());
 //});
 
-var choose = function(A){
-    return A[Math.floor(Math.random()*A.length)];
-};
+//var choose = function(A){
+//    return A[Math.floor(Math.random()*A.length)];
+//};
 
 var db_handler = {
 //    live_topics : ['Politics', 'History', 'Movies'],
@@ -93,63 +97,119 @@ var db_handler = {
         }
     },
     
-    create_basic_question : function(topic){
-        var i = Math.floor(Math.random()*topic.length);
+    create_basic_question : function(topic_list){
+        var celebs = _.sample(topic_list, 5);
+        
         return{
-            name: topic[i].name,
-            right_answer: {
-                id: topic[i].index,
-                val: choose(topic[i].tags)
-            },
-            wrong_answers: [
-                {id: 2, val: choose(choose(topic).tags)},
-                {id: 3, val: choose(choose(topic).tags)},
-                {id: 4, val: choose(choose(topic).tags)},
-                {id: 5, val: choose(choose(topic).tags)}
-            ]
+            name: celebs[0]['name'],
+            right_answer: {id: celebs[0]['index'], val: _.sample(celebs[0]['tags'])},
+            wrong_answers: _.map(
+                celebs.slice(1),
+                function(row){
+                    return {
+                        'id': row['index'],
+                        'val': _.sample(row['tags'])
+                    }
+                }
+            ) 
+        };
+//        var i = Math.floor(Math.random()*topic_list.length);
+//        return{
+//            name: topic[i].name,
+//            right_answer: {
+//                id: topic[i].index,
+//                val: choose(topic[i].tags)
+//            },
+//            wrong_answers: [
+//                {id: 2, val: choose(choose(topic).tags)},
+//                {id: 3, val: choose(choose(topic).tags)},
+//                {id: 4, val: choose(choose(topic).tags)},
+//                {id: 5, val: choose(choose(topic).tags)}
+//            ]
+//        }
+    },
+    
+    create_which_celeb_question : function(topic_list){
+        var celebs = _.sample(topic_list, 5);
+        console.log(celebs);
+        
+        return{
+            clue: _.sample(celebs[0]['tags']),
+            right_answer: {id: celebs[0]['index'], val: celebs[0]['name']},
+            wrong_answers: _.map(
+                celebs.slice(1),
+                function(row){
+                    return {
+                        'id': row['index'],
+                        'val': row['name']
+                    }
+                }
+            ) 
+        };
+        
+//        var i = Math.floor(Math.random()*names.length);
+//        return{
+//            clue: tags[i],
+//            right_answer: {id: 1, val: names[i]},
+//            wrong_answers: [
+//                {id: 2, val: choose(names)},
+//                {id: 3, val: choose(names)},
+//                {id: 4, val: choose(names)},
+//                {id: 5, val: choose(names)}
+//            ]
+//        }
+    },
+    create_not_describe_question : function(topic_list){
+        var celebs = _.sample(topic_list, 5);
+        
+        return{
+            name: celebs[0]['name'],
+            right_answer: {id: celeb[0]['index'], val: _.sample(celeb[0]['tags'])},
+            wrong_answers: _.map(
+                celebs.slice(1),
+                function(row){
+                    return {
+                        'id': row['index'],
+                        'val': _.sample(row['tags'])
+                    }
+                }
+            ) 
+            
+//            [
+//                {id: 2, val: choose(tags)},
+//                {id: 3, val: choose(tags)},
+//                {id: 4, val: choose(tags)},
+//                {id: 5, val: choose(tags)}
+//            ]
         }
     },
     
-    create_which_celeb_question : function(){
-        var i = Math.floor(Math.random()*names.length);
+    create_name_something_question : function(topic_list){
+        var celeb = _.sample(topic_list);
         return{
-            clue: tags[i],
-            right_answer: {id: 1, val: names[i]},
-            wrong_answers: [
-                {id: 2, val: choose(names)},
-                {id: 3, val: choose(names)},
-                {id: 4, val: choose(names)},
-                {id: 5, val: choose(names)}
-            ]
+            name: celeb['name'],
+            right_answers: celeb['tags'] //This should contains the tags for this person, so we can do regex matching against the user's answer
         }
     },
-    create_not_describe_question : function(){
-        return{
-            name: choose(names),
-            right_answer: {id: 1, val: choose(tags)},
-            wrong_answers: [
-                {id: 2, val: choose(tags)},
-                {id: 3, val: choose(tags)},
-                {id: 4, val: choose(tags)},
-                {id: 5, val: choose(tags)}
-            ]
-        }
-    },
-    create_name_something_question : function(){
-        return{
-            name: choose(names),
-            right_answers: []//!Eventually, this should contain all the right answers for this person, so we can do regex matching against the user's answer
-        }
-    },
-    create_most_famous_question : function(){
+    create_most_famous_question : function(topic_list){
+        var celebs = _.sample(topic_list, 5);
+        
         return {
-            names: [
-                {id: 1, val: choose(names)},  
-                {id: 2, val: choose(names)},  
-                {id: 3, val: choose(names)},  
-                {id: 4, val: choose(names)},
-                {id: 5, val: choose(names)}   
-            ]
+            names: _.map(
+                celebs,
+                function(row){
+                    return {
+                        'id': row['index'],
+                        'val': row['name']
+                    }
+                })        
+//            [
+//                {id: 1, val: choose(names)},
+//                {id: 2, val: choose(names)},
+//                {id: 3, val: choose(names)},
+//                {id: 4, val: choose(names)},
+//                {id: 5, val: choose(names)}   
+//            ]
         }
     },
     create_pick_topic_question : function(){
@@ -190,7 +250,7 @@ var mclbiq = {
     
     get_question_batch : function(size, topic){
         for( var i=0; i<size-2; i++ ){
-            var q_type = choose(['basic', 'basic', 'basic', 'basic', 'basic', /*'not_describe', 'not_describe',*/ 'which_celeb', 'name_something', 'most_famous', 'pick_topic']);
+            var q_type = _.sample(['basic', 'basic', 'basic', 'basic', 'basic', /*'not_describe', 'not_describe',*/ 'which_celeb', 'name_something', 'most_famous', 'pick_topic']);
             mclbiq.q_stack.push(db_handler.get_question(q_type, topic));
         }
         //Every batch starts with at least two basic questions
@@ -311,7 +371,7 @@ var mclbiq = {
         $.cookie.json = true;
         if( $.cookie('mclbiq') == null ){
             mclbiq.session_obj = {
-                name : choose(famous_adjs)+'-'+choose(famous_nouns)+'-'+Math.floor(1000+9000*Math.random()),
+                name : _.sample(famous_adjs)+'-'+_.sample(famous_nouns)+'-'+Math.floor(1000+9000*Math.random()),
                 total : 0
             }
         } else {
@@ -404,7 +464,7 @@ var mclbiq = {
         }
         
         //Suppress img field
-        $(".qhead img").hide();
+        $(".qhead img", new_q).hide();
     }
 };
 
