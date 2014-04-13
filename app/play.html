@@ -15,15 +15,7 @@
     <span id="session-name" class="session-name mini"></span><br/>
     <span class="mini">Total questions: </span><span id="session-total" class="mini"></span>
 </div>
-<div id="main">
-<!--
-  <div id="intro_q" class="question">
-      <h1>Your code: <span class="session-name">famous-bigwig-3024</span></h1>
-      We don't do logins yet, but we'll remember your game. Write down this code (<span class="session-name">famous-bigwig-3024</span>) so you can get your score later.
-      <div class="submit">Begin!</div>
-  </div>
--->
-    
+<div id="main">    
   <div id="proto_q" class="question" style="display:none">
     <div class="qhead"></div>
     <div class="qbody"></div>
@@ -34,12 +26,12 @@
 <script type="text/javascript" src="js/jQueryRotate.js"></script>
 <script type="text/javascript" src="js/jquery.color.js"></script>
 <script type="text/javascript" src="js/jquery.cookie.js"></script>
+<script type='text/javascript' src='js/underscore-min.js'></script>
+<script type='text/javascript' src='js/platform.js'></script>
 
 <script type='text/javascript' src='https://cdn.firebase.com/js/client/1.0.11/firebase.js'></script>
 
-<script type='text/javascript' src='js/underscore-min.js'></script>
-
-<script type='text/javascript' src='js/data.js'></script>
+<script type='text/javascript' src='data/data.js'></script>
 <script type='text/javascript' src='data/generic.js'></script>
 <script type='text/javascript' src='data/history.js'></script>
 <script type='text/javascript' src='data/politics.js'></script>
@@ -48,17 +40,11 @@
 <script type='text/javascript' src='data/science.js'></script>
 
 <script>
-//fb.on('value', function(snapshot) {
-//    console.log(snapshot.val());
-//    alert('fred’s first name is ' + snapshot.val());
-//});
-
-//var choose = function(A){
-//    return A[Math.floor(Math.random()*A.length)];
-//};
-
 var db_handler = {
-//    live_topics : ['Politics', 'History', 'Movies'],
+    fb_sessions : new Firebase('https://fame-meter.firebaseio.com/sessions'),
+    fb_answers : new Firebase('https://fame-meter.firebaseio.com/answers'),
+    session_obj : null,
+
     topic_lists : {
         'generic': generic_data,
         'politics' : politics_data,
@@ -66,6 +52,52 @@ var db_handler = {
         'movies' : movies_data,
         'sports' : sports_data,
         'science' : science_data
+    },
+
+    set_session_cookie : function(){
+        $.cookie.json = true;
+        if( $.cookie('mclbiq') == null ){
+            db_handler.session_obj = {
+                name : _.sample(famous_adjs)+'-'+_.sample(famous_nouns)+'-'+Math.floor(1000+9000*Math.random()),
+                total : 0,
+                session_index : 0
+            }
+        } else {
+            db_handler.session_obj = $.cookie('mclbiq')
+        }
+        //Set start time
+        db_handler.session_obj["start_time"] = new Date();
+        
+        //Increment session_index
+        db_handler.session_obj["session_index"] += 1;
+
+        //Get platform info
+        db_handler.session_obj["platform_description"] = platform.description;
+//      {
+//            name : platform.name,
+//            version : platform.version,
+//            product : platform.product,
+//            manufacturer: platform.manufacturer,
+//            layout : platform.layout,
+//            os : platform.os.toString(),
+//            description : platform.description 
+//        };
+        
+        //Store to db
+        db_handler.fb_sessions.push(db_handler.session_obj);
+        
+        //Store locally
+        $.cookie('mclbiq', db_handler.session_obj, { expires: 180, path: '/' });
+
+        //! In strict MVC, these shouldn't live here. But we're not being strict.
+        $("#session-name").html(db_handler.session_obj.name);
+        $("#session-total").html(db_handler.session_obj.total);
+    },
+    
+    inc_session_cookie : function(){
+        db_handler.session_obj.total += 1;
+        $.cookie('mclbiq', db_handler.session_obj, { expires: 180, path: '/' });
+        $("#session-total").html(db_handler.session_obj.total);
     },
     
     get_question : function(q_type, topic){
@@ -97,6 +129,7 @@ var db_handler = {
         }
     },
     
+    //--- Specific questions models ---//
     create_basic_question : function(topic_list){
         var celebs = _.sample(topic_list, 5);
         
@@ -113,20 +146,6 @@ var db_handler = {
                 }
             ) 
         };
-//        var i = Math.floor(Math.random()*topic_list.length);
-//        return{
-//            name: topic[i].name,
-//            right_answer: {
-//                id: topic[i].index,
-//                val: choose(topic[i].tags)
-//            },
-//            wrong_answers: [
-//                {id: 2, val: choose(choose(topic).tags)},
-//                {id: 3, val: choose(choose(topic).tags)},
-//                {id: 4, val: choose(choose(topic).tags)},
-//                {id: 5, val: choose(choose(topic).tags)}
-//            ]
-//        }
     },
     
     create_which_celeb_question : function(topic_list){
@@ -146,18 +165,6 @@ var db_handler = {
                 }
             ) 
         };
-        
-//        var i = Math.floor(Math.random()*names.length);
-//        return{
-//            clue: tags[i],
-//            right_answer: {id: 1, val: names[i]},
-//            wrong_answers: [
-//                {id: 2, val: choose(names)},
-//                {id: 3, val: choose(names)},
-//                {id: 4, val: choose(names)},
-//                {id: 5, val: choose(names)}
-//            ]
-//        }
     },
     create_not_describe_question : function(topic_list){
         var celebs = _.sample(topic_list, 5);
@@ -174,14 +181,7 @@ var db_handler = {
                     }
                 }
             ) 
-            
-//            [
-//                {id: 2, val: choose(tags)},
-//                {id: 3, val: choose(tags)},
-//                {id: 4, val: choose(tags)},
-//                {id: 5, val: choose(tags)}
-//            ]
-        }
+        };
     },
     
     create_name_something_question : function(topic_list){
@@ -191,6 +191,7 @@ var db_handler = {
             right_answers: celeb['tags'] //This should contains the tags for this person, so we can do regex matching against the user's answer
         }
     },
+    
     create_most_famous_question : function(topic_list){
         var celebs = _.sample(topic_list, 5);
         
@@ -203,15 +204,9 @@ var db_handler = {
                         'val': row['name']
                     }
                 })        
-//            [
-//                {id: 1, val: choose(names)},
-//                {id: 2, val: choose(names)},
-//                {id: 3, val: choose(names)},
-//                {id: 4, val: choose(names)},
-//                {id: 5, val: choose(names)}   
-//            ]
-        }
+        };
     },
+    
     create_pick_topic_question : function(){
         return {
             topics: [
@@ -226,33 +221,28 @@ var db_handler = {
 };
 
 var mclbiq = {
-    session_obj : null,
     q_stack : Array(),
-//    fb : new Firebase('https://fame-meter.firebaseio.com/answers'),
     
     //--- Major API events ---//
     begin_quiz : function(){
-        mclbiq.set_session_cookie();
+        db_handler.set_session_cookie();
         mclbiq.start_timer();
         
-        mclbiq.get_question_batch(5, '');
+        mclbiq.get_question_batch(5);
         //Start off with two extra basic questions on the stack
         mclbiq.q_stack.push(db_handler.get_question('basic'));
-        mclbiq.q_stack.push(db_handler.get_question('pick_topic'));
+        mclbiq.q_stack.push(db_handler.get_question('basic'));
         
         mclbiq.next_question();
         $("#score-box").hide().slideDown();
-
-    //            $(window).bind('beforeunload', function(){
-    //                return 'Are you sure you want to quit?\nIf you go, make sure to write down this code: '+session_name+' so that you can get your score later.'
-    //            });
     },
     
     get_question_batch : function(size, topic){
         for( var i=0; i<size-2; i++ ){
-            var q_type = _.sample(['basic', 'basic', 'basic', 'basic', 'basic', /*'not_describe', 'not_describe',*/ 'which_celeb', 'name_something', 'most_famous', 'pick_topic']);
+            var q_type = _.sample(['basic', 'basic', 'basic', 'basic', 'basic', /*'not_describe', 'not_describe',*/ 'which_celeb', 'which_celeb', 'name_something', 'name_something', 'most_famous', 'most_famous', 'pick_topic', 'pick_topic']);
             mclbiq.q_stack.push(db_handler.get_question(q_type, topic));
         }
+        
         //Every batch starts with at least two basic questions
         mclbiq.q_stack.push(db_handler.get_question('basic', topic));
         mclbiq.q_stack.push(db_handler.get_question('basic', topic));
@@ -272,7 +262,7 @@ var mclbiq = {
 
         if((q_json.q_topic != '') & (q_json.q_topic != null)){
             console.log(q_json);
-            $('<img src="img/'+q_json.q_topic.toLowerCase()+'.png"></img>').prependTo($(".qhead", new_q));
+            $('<img src="img/'+q_json.q_topic.toLowerCase()+'60.png"></img>').prependTo($(".qhead", new_q));
         }
 
         if ( q_json.q_type=='basic'){ mclbiq.create_basic_question(q_json, new_q); }
@@ -281,14 +271,13 @@ var mclbiq = {
         else if ( q_json.q_type=='name_something' ){ mclbiq.create_name_something_question(q_json, new_q); }
         else if ( q_json.q_type=='most_famous' ){ mclbiq.create_most_famous_question(q_json, new_q); }
         else if ( q_json.q_type=='pick_topic' ){ mclbiq.create_pick_topic_question(q_json, new_q); }
-//        else { q_content = {}}
                 
         $(".qanswer", new_q)
             .detach()
             .sort( function(){ return ( Math.round( Math.random() ) - 0.5 ) } )
             .appendTo($(".qbody", new_q));
                 
-        new_q.slideDown(500);//, function(){
+        new_q.slideDown(500);
 
         //Set up events
         $(".qanswer", new_q)
@@ -297,21 +286,20 @@ var mclbiq = {
             .click(mclbiq.answer_question);
 
         $(".submit", new_q)
-            .click(mclbiq.answer_question);    
-        //});
+            .click(mclbiq.answer_question);
         
         //Remove questions more than 20 slides ago
         $(".question:gt(20)")
             .not("#proto_q")
             .slideUp(function(){
                 $(this).remove();
-            });
-
+            }
+        );
     },
     
     answer_question : function(){
         $("input", this).attr("checked", true);
-        mclbiq.inc_session_cookie();
+        db_handler.inc_session_cookie();
 
         var parent = $(this).closest(".question");
 
@@ -320,6 +308,7 @@ var mclbiq = {
         } else if( parent.data("q-type")=="pick_topic" ){
             var bgcolor = "#ccf";
             //Add questions to the stack
+            //!!! This should switch to a real data field.
             var topic = $("span", this).html();
             console.log(topic);
             mclbiq.get_question_batch(10, topic);
@@ -366,29 +355,7 @@ var mclbiq = {
         );
     },
 
-    //--- Utility functions ---//
-    set_session_cookie : function(){
-        $.cookie.json = true;
-        if( $.cookie('mclbiq') == null ){
-            mclbiq.session_obj = {
-                name : _.sample(famous_adjs)+'-'+_.sample(famous_nouns)+'-'+Math.floor(1000+9000*Math.random()),
-                total : 0
-            }
-        } else {
-            mclbiq.session_obj = $.cookie('mclbiq')
-        }
-        $.cookie('mclbiq', mclbiq.session_obj, { expires: 180, path: '/' });
-
-        $("#session-name").html(mclbiq.session_obj.name);
-        $("#session-total").html(mclbiq.session_obj.total);
-    },
-    
-    inc_session_cookie : function(){
-        mclbiq.session_obj.total += 1;
-        $.cookie('mclbiq', mclbiq.session_obj, { expires: 180, path: '/' });
-        $("#session-total").html(mclbiq.session_obj.total);
-    },
-    
+    //--- Utility functions ---//    
     start_timer : function(){
         var start = new Date().getTime();
         window.setInterval(function()
