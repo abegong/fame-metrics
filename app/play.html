@@ -41,8 +41,9 @@
 
 <script>
 var db_handler = {
-    fb_sessions : new Firebase('https://fame-meter.firebaseio.com/sessions'),
-    fb_answers : new Firebase('https://fame-meter.firebaseio.com/answers'),
+    debug_mode : false,
+    fb_sessions : null,
+    fb_answers : null,
     session_obj : null,
 
     topic_lists : {
@@ -53,7 +54,56 @@ var db_handler = {
         'sports' : sports_data,
         'science' : science_data
     },
-
+    
+    init_session : function(){
+        db_handler.connect_to_db();
+        db_handler.set_session_cookie();
+    },
+    
+    connect_to_db : function(){
+        try {
+            db_handler.fb_sessions = new Firebase('https://fame-meter.firebaseio.com/sessions');
+            db_handler.fb_answers = new Firebase('https://fame-meter.firebaseio.com/answers');
+        } catch(err) {
+            if( err.message == "Firebase is not defined" ){
+                //!!! Not sure if this even works, but it's not really important now.
+                
+                db_handler.fb_sessions = {
+                    push : function(obj){
+                        var storage = $.cookie('mclbiq_storage');
+                        if( storage == null ){
+                            storage = {};
+                        }
+                        if( "sessions" in storage ){
+                            storage["sessions"].push(obj);
+                        } else {
+                            storage["sessions"] = [obj];
+                        }
+                        console.log("Sessions stored:", storage["sessions"].length);
+                        $.cookie('mclbiq_storage', storage, { expires: 180, path: '/' });
+                    }
+                };
+                db_handler.fb_answers = {
+                    push : function(obj){
+                        var storage = $.cookie('mclbiq_storage');
+                        if( storage == null ){
+                            storage = {};
+                        }
+                        if( "answers" in storage ){
+                            storage["answers"].push(obj);
+                        } else {
+                            storage["answers"] = [obj];                            
+                        }
+                        console.log("Answers stored:", storage["answers"].length);
+                        $.cookie('mclbiq_storage', storage, { expires: 180, path: '/' });
+                    }
+                };
+            } else {
+                throw err;
+            }
+        }
+    },
+    
     set_session_cookie : function(){
         $.cookie.json = true;
         if( $.cookie('mclbiq') == null ){
@@ -63,7 +113,7 @@ var db_handler = {
                 session_index : 0
             }
         } else {
-            db_handler.session_obj = $.cookie('mclbiq')
+            db_handler.session_obj = $.cookie('mclbiq');
         }
         //Set start time
         db_handler.session_obj["start_time"] = new Date();
@@ -73,18 +123,13 @@ var db_handler = {
 
         //Get platform info
         db_handler.session_obj["platform_description"] = platform.description;
-//      {
-//            name : platform.name,
-//            version : platform.version,
-//            product : platform.product,
-//            manufacturer: platform.manufacturer,
-//            layout : platform.layout,
-//            os : platform.os.toString(),
-//            description : platform.description 
-//        };
-        
+
         //Store to db
-        db_handler.fb_sessions.push(db_handler.session_obj);
+        if( db_handler.debug_mode ){        
+            console.log(db_handler.session_obj);
+        } else {
+            db_handler.fb_sessions.push(db_handler.session_obj);
+        }
         
         //Store locally
         $.cookie('mclbiq', db_handler.session_obj, { expires: 180, path: '/' });
@@ -94,7 +139,21 @@ var db_handler = {
         $("#session-total").html(db_handler.session_obj.total);
     },
     
-    inc_session_cookie : function(){
+    answer_question : function(question, answer){
+        var question_record = {
+            session_name : db_handler.session_obj.name,
+            session_index : db_handler.session_obj.session_index,
+            question : question,
+            answer : answer
+        };
+        
+        if( db_handler.debug_mode ){
+            console.log(question_record);
+        } else {
+            db_handler.fb_answers.push(question_record);
+        }
+
+        //Increment the counter for total questions
         db_handler.session_obj.total += 1;
         $.cookie('mclbiq', db_handler.session_obj, { expires: 180, path: '/' });
         $("#session-total").html(db_handler.session_obj.total);
@@ -113,6 +172,7 @@ var db_handler = {
             topic = ''
             var topic_list = db_handler.topic_lists['generic'];
         }
+        
         if ( q_type=='basic'){ q_content = db_handler.create_basic_question(topic_list); }
         else if ( q_type=='which_celeb' ){ q_content = db_handler.create_which_celeb_question(topic_list); }
         else if ( q_type=='not_describe' ){ q_content = db_handler.create_not_describe_question(topic_list); }
@@ -122,7 +182,7 @@ var db_handler = {
         else { q_content = {}}
         
         return {
-            id: Math.floor(Math.random()*10000),
+//            id: Math.floor(Math.random()*10000),
             q_type : q_type,
             q_topic : topic,
             q_content : q_content,
@@ -150,7 +210,6 @@ var db_handler = {
     
     create_which_celeb_question : function(topic_list){
         var celebs = _.sample(topic_list, 5);
-        console.log(celebs);
         
         return{
             clue: _.sample(celebs[0]['tags']),
@@ -166,6 +225,7 @@ var db_handler = {
             ) 
         };
     },
+    
     create_not_describe_question : function(topic_list){
         var celebs = _.sample(topic_list, 5);
         
@@ -187,6 +247,7 @@ var db_handler = {
     create_name_something_question : function(topic_list){
         var celeb = _.sample(topic_list);
         return{
+            id: celeb['index'],
             name: celeb['name'],
             right_answers: celeb['tags'] //This should contains the tags for this person, so we can do regex matching against the user's answer
         }
@@ -222,14 +283,19 @@ var db_handler = {
 
 var mclbiq = {
     q_stack : Array(),
+    current_question : null,
     
     //--- Major API events ---//
     begin_quiz : function(){
-        db_handler.set_session_cookie();
+        db_handler.init_session();
         mclbiq.start_timer();
         
         mclbiq.get_question_batch(5);
         //Start off with two extra basic questions on the stack
+//        mclbiq.q_stack.push(db_handler.get_question('pick_topic'));
+//        mclbiq.q_stack.push(db_handler.get_question('most_famous'));
+//        mclbiq.q_stack.push(db_handler.get_question('name_something'));
+//        mclbiq.q_stack.push(db_handler.get_question('which_celeb'));
         mclbiq.q_stack.push(db_handler.get_question('basic'));
         mclbiq.q_stack.push(db_handler.get_question('basic'));
         
@@ -253,15 +319,15 @@ var mclbiq = {
             mclbiq.get_question_batch(5, '');
         }
         var q_json = mclbiq.q_stack.pop();
+        mclbiq.current_question = q_json;
 
 //        Create q object
         var new_q = $("#proto_q").clone()
             .attr("id", null)
-            .data("q-type", q_json.q_type)
+            .data("qtype", q_json.q_type)
             .prependTo($("#main"));
 
         if((q_json.q_topic != '') & (q_json.q_topic != null)){
-            console.log(q_json);
             $('<img src="img/'+q_json.q_topic.toLowerCase()+'60.png"></img>').prependTo($(".qhead", new_q));
         }
 
@@ -298,28 +364,109 @@ var mclbiq = {
     },
     
     answer_question : function(){
-        $("input", this).attr("checked", true);
-        db_handler.inc_session_cookie();
-
         var parent = $(this).closest(".question");
+        var qtype = parent.data(qtype).qtype;
+        var answer = {};
 
-        if( parent.data("q-type")=="most_famous" ){
-            var bgcolor = "#ffc";
-        } else if( parent.data("q-type")=="pick_topic" ){
-            var bgcolor = "#ccf";
+        //Business logic for identifying and recording correct answers
+        //!Working on the logic here
+        temp = this;
+        if ( _.contains(['basic', 'which_celeb', 'not_describe'], qtype)){
+            if( $(this).attr("data-correct")==1 ){
+                var status = "right";
+            } else {
+                var status = "wrong";
+            }
+            answer = {
+                'id' : $('input', this).val(),
+                'status' : status
+            };
+        } else if ( qtype=='name_something' ){
+            var text_content = $("textarea", $(temp).closest(".question")).val();
+            
+            if( $(this).attr("data-correct")==1 ){
+                if( Math.random()>.7 ){ //This ought to be based on real regex
+                    var status = "right";
+                    
+                } else {
+                    var status = "maybe";
+
+                }
+            } else {
+                var status = "wrong";
+            }
+
+            answer = {
+                'text' : text_content,
+                'status' : status
+            };
+        } else if ( qtype=='most_famous' ){ 
+            answer = {
+                'id' : $('input', this).val(),
+                'status' : "okay"
+            };
+        } else if ( qtype=='pick_topic' ){
+            answer = {
+                'id' : $('input', this).val(),
+                'status' : "okay"
+            };
+            
             //Add questions to the stack
-            //!!! This should switch to a real data field.
             var topic = $("span", this).html();
-            console.log(topic);
             mclbiq.get_question_batch(10, topic);
-        } else if($(this).attr("data-correct")==1){
+        }
+        
+        
+        //!Might eventually be better to break this out into individual functions.
+//        if( parent.data("q-type")=="most_famous" ){
+//        } else if( parent.data("q-type")=="pick_topic" ){
+//            //Add questions to the stack
+//            var topic = $("span", this).html();
+//            mclbiq.get_question_batch(10, topic);
+//        } else if($(this).attr("data-correct")==1){
+//            $("#score-num").html( parseInt($("#score-num").html())+1 );
+//            $("#score-denom").html( parseInt($("#score-denom").html())+1 );
+//        } else {
+//            $("#score-denom").html( parseInt($("#score-denom").html())+1 );
+//        }
+
+        //        if( parent.data("q-type")=="most_famous" ){
+//        } else if( parent.data("q-type")=="pick_topic" ){
+//            //Add questions to the stack
+//            var topic = $("span", this).html();
+//            mclbiq.get_question_batch(10, topic);
+//        } else if($(this).attr("data-correct")==1){
+//            $("#score-num").html( parseInt($("#score-num").html())+1 );
+//            $("#score-denom").html( parseInt($("#score-denom").html())+1 );
+//        } else {
+//            $("#score-denom").html( parseInt($("#score-denom").html())+1 );
+//        }
+
+        //Set background color and score counters
+        if( answer["status"] == "right" ){
             var bgcolor = "#cfc";
             $("#score-num").html( parseInt($("#score-num").html())+1 );
-        } else {
+            $("#score-denom").html( parseInt($("#score-denom").html())+1 );
+        } else if ( answer["status"] == "wrong" ){
             var bgcolor = "#fcc";
+            $("#score-denom").html( parseInt($("#score-denom").html())+1 );
+        } else if ( answer["status"] == "maybe" ){
+            var bgcolor = "#ffc";
+            $("#score-num").html( parseInt($("#score-num").html())+1 );
+            $("#score-denom").html( parseInt($("#score-denom").html())+1 );
+        } else if ( answer["status"] == "okay" ){
+            var bgcolor = "#ccf";
         }
-        $("#score-denom").html( parseInt($("#score-denom").html())+1 );
+//        if( parent.data("q-type")=="most_famous" ){
+//        } else if( parent.data("q-type")=="pick_topic" ){
+//        } else if($(this).attr("data-correct")==1){
+//        } else {
+//        }
+        
+        //Check the input box for the question
+        $("input", this).attr("checked", true);
 
+        //Disable all events for the old question
         $(".qanswer", parent)
             .off('mouseover')
             .off('mouseout')
@@ -353,6 +500,10 @@ var mclbiq = {
                 mclbiq.next_question();
             }
         );
+        
+        //Record the response to the DB
+        db_handler.answer_question(mclbiq.current_question, answer);
+
     },
 
     //--- Utility functions ---//    
