@@ -10,7 +10,7 @@ named_questions = {
 		id : "welcome",
 		q_type : "info_only",
 		q_content : {
-			header : "<h2>Welcome to MyCelebrityIQ!</h2><p>Test your knowledge of famous people and their accomplishments, in many different areas.</p><p>This is a very early test version of the site. Thanks for playing!</p>",
+			header : "<h2>Welcome to PeopleIQ!</h2><p>Test your knowledge of famous people and their accomplishments, in many different areas.</p><p>This is a very early test version of the site. Thanks for playing!</p>",
 			submit_text : "Let's go!"
 		}
 	},
@@ -21,6 +21,24 @@ named_questions = {
 		q_content : {
 			header : "<h2>So... when do I get my score?</h2><p>As soon as we collect enough answers! Please enter your email here, and we'll let you know the moment your score is ready.</p>",
 			submit_text : "Done"
+		}
+	},
+
+	faq2 : {
+		id : "faq2",
+		q_type : "info_only",
+		q_content : {
+			header : "<h2>How many questions do I need to answer to get my IQ score?</h2><p>We don't know yet! That's something we're trying to learn right now. To help, please answer more questions, and invite your friends to play too!</p><p>PS: Our best guess is \"about 60.\"</p>",
+			submit_text : "Got it"
+		}
+	},
+
+	why_celebs : {
+		id : "why_celebs",
+		q_type : "info_only",
+		q_content : {
+			header : "<h2>Why celebrities?</h2><p>PeopleIQ is about <i>people</i>.  We have big plans for making the site more human, more personal, and more genuinely useful.</p><p>Celebrities are just a starting point&mdash;the people that a lot of people already happen to know.</p>",
+			submit_text : "Cool"
 		}
 	},
 
@@ -38,15 +56,6 @@ named_questions = {
 		q_type : "info_only",
 		q_content : {
 			header : "<h2>FAQ #8: Is guessing okay?</h2><p>Yep. If you don't know, just take your best shot.</p>",
-			submit_text : "Got it"
-		}
-	},
-
-	faq2 : {
-		id : "faq2",
-		q_type : "info_only",
-		q_content : {
-			header : "<h2>How many questions do I need to answer to get my celebrity IQ?</h2><p>We don't know yet! That's something we're trying to learn right now. To help, please answer more questions, and invite your friends to play too!</p><p>PS: Our best guess is \"about 60.\"</p>",
 			submit_text : "Got it"
 		}
 	},
@@ -87,7 +96,7 @@ named_questions = {
 		}
 	},
 
-	new_list_mult_choice : {
+	new_list_mc_1 : {
 		id : "new_list_mc_1",
 		q_type : "mult_choice",
 		q_content : {

@@ -2,11 +2,11 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <link rel="stylesheet" href="style.css" type="text/css">
-    <title>My Celebrity IQ</title>
+    <title>PeopleIQ</title>
 </head>
 <body>
 <div id="header">
-    <span id="head-title"><b>My Celebrity IQ</b></span>
+    <span id="head-title"><b>My PeopleIQ</b></span>
 <!--
     <span id="head-right"><a href="play.html"><b>Play</b></a> | <a href="feedback.html">Feedback</a> | <a href="about.html">About</a> </span>
 -->
@@ -43,7 +43,7 @@
 
 <script>
 var db_handler = {
-    debug_mode : false,
+    debug_mode : true,
     fb_sessions : null,
     fb_answers : null,
     session_obj : null,
@@ -328,8 +328,8 @@ var mclbiq = {
     },
     
     get_scripted_question : function(index){
-        var seq = ['welcome', 'when_score', 'faq2', 'new_list_mc_1', 'email_again', 'new_list_mc_2', 'email_again', 'new_feature_oe', 'new_list_mc_3'];//'faq2', 'new_list_mc_3', 'faq3', 'email_signup', 'faq4', 'faq5', 'new_list_mult_choice', 'new_list_mc_2', 'faq1', 'new_list_mc_4', 'new_list_oe', 'new_feature_oe'];
-        var k = 15
+        var seq = ['welcome', 'when_score', 'faq2', 'why_celebs', 'email_again', 'new_list_mc_1', 'new_feature_oe', 'email_again', 'new_list_mc_2', 'new_list_mc_3', 'email_again'];//'faq2', 'new_list_mc_3', 'faq3', 'email_signup', 'faq4', 'faq5', 'new_list_mult_choice', 'new_list_mc_2', 'faq1', 'new_list_mc_4', 'new_list_oe', 'new_feature_oe'];
+        var k = 1;
         if( (index%k == 0)&(index/k < seq.length) ){
             return named_questions[seq[index/k]];
         }
