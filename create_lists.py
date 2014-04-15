@@ -14,7 +14,7 @@ def convert_df_to_list(df, filename=None):
 		})
 
 	if filename:
-		file(filename, 'w').write('\n'.join([json.dumps(j) for j in celeb_list]))
+		file(filename, 'w').write(',\n\t'.join([json.dumps(j) for j in celeb_list]))
 
 	return celeb_list
 
@@ -86,3 +86,26 @@ if 0:
 
 	generic_df = D[(D.fame>400000)]
 	convert_df_to_list(generic_df, 'data/lists/generic.jl')
+
+if 1:
+	pol_categories = list(C.category[C.Politics==1])
+	politics_df = D[D.occupation.map( lambda x: x in pol_categories ) & (D.fame>200000)]
+	convert_df_to_list(politics_df, 'app/data/politics.js')
+
+	sci_categories = list(C.category[C.Science==1])
+	sci_df = D[D.occupation.map( lambda x: x in sci_categories ) & (D.fame>40000)]
+	convert_df_to_list(sci_df, 'app/data/science.js')
+
+	sports_categories = list(C.category[C.Sports==1])
+	sports_df = D[D.occupation.map( lambda x: x in sports_categories ) & (D.fame>200000)]
+	convert_df_to_list(sports_df, 'app/data/sports.js')
+
+	history_df = D[(D.birthyear < 1900) & (D.fame>200000)]
+	convert_df_to_list(history_df, 'app/data/history.js')
+
+	movie_categories = ['Actor', 'Film Director', 'Film/TV Producer', 'Screenwriter', 'Cinematographer']
+	movie_df = D[D.occupation.map( lambda x: x in movie_categories ) & (D.fame>400000)]
+	convert_df_to_list(movie_df, 'app/data/movies.js')
+
+	generic_df = D[(D.fame>800000)]
+	convert_df_to_list(generic_df, 'app/data/generic.js')

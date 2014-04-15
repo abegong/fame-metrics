@@ -41,7 +41,7 @@
 
 <script>
 var db_handler = {
-    debug_mode : false,
+    debug_mode : true,
     fb_sessions : null,
     fb_answers : null,
     session_obj : null,
@@ -139,6 +139,10 @@ var db_handler = {
         $("#session-total").html(db_handler.session_obj.total);
     },
     
+    get_question_index : function(){
+        return db_handler.session_obj.total;
+    },
+    
     answer_question : function(question, answer){
         var question_record = {
             session_name : db_handler.session_obj.name,
@@ -179,7 +183,7 @@ var db_handler = {
         else if ( q_type=='name_something' ){ q_content = db_handler.create_name_something_question(topic_list); }
         else if ( q_type=='most_famous' ){ q_content = db_handler.create_most_famous_question(topic_list); }
         else if ( q_type=='pick_topic' ){ q_content = db_handler.create_pick_topic_question(); }
-        else { q_content = {}}
+//        else { q_content = {}}
         
         return {
 //            id: Math.floor(Math.random()*10000),
@@ -296,31 +300,53 @@ var mclbiq = {
 //        mclbiq.q_stack.push(db_handler.get_question('most_famous'));
 //        mclbiq.q_stack.push(db_handler.get_question('name_something'));
 //        mclbiq.q_stack.push(db_handler.get_question('which_celeb'));
-        mclbiq.q_stack.push(db_handler.get_question('basic'));
-        mclbiq.q_stack.push(db_handler.get_question('basic'));
         
+//        mclbiq.q_stack.push(db_handler.get_question('basic'));
+//        mclbiq.q_stack.push(db_handler.get_question('basic'));
+
+//        for( var name in named_questions ){
+//            mclbiq.q_stack.push(named_questions[name]);
+//        }
+
+//        mclbiq.q_stack.push(db_handler.get_question('named', named_questions[name]));
+
         mclbiq.next_question();
         $("#score-box").hide().slideDown();
     },
     
     get_question_batch : function(size, topic){
         for( var i=0; i<size-2; i++ ){
-            var q_type = _.sample(['basic', 'basic', 'basic', 'basic', 'basic', /*'not_describe', 'not_describe',*/ 'which_celeb', 'which_celeb', 'name_something', 'name_something', 'most_famous', 'most_famous', 'pick_topic', 'pick_topic']);
+            var q_type = _.sample(['basic', 'basic', 'basic', 'basic', 'basic', 'basic', 'basic', /*'not_describe', 'not_describe',*/ 'which_celeb', 'which_celeb', 'name_something', 'name_something', 'most_famous', 'most_famous', 'pick_topic', 'pick_topic']);
             mclbiq.q_stack.push(db_handler.get_question(q_type, topic));
         }
         
         //Every batch starts with at least two basic questions
         mclbiq.q_stack.push(db_handler.get_question('basic', topic));
         mclbiq.q_stack.push(db_handler.get_question('basic', topic));
+        mclbiq.q_stack.push(db_handler.get_question('basic', topic));
+    },
+    
+    get_scripted_question : function(index){
+        var seq = ['welcome', 'when_score', 'faq2', 'new_list_mc_1', 'new_list_mc_2', 'new_feature_oe', 'new_list_mc_3'];//'faq2', 'new_list_mc_3', 'faq3', 'email_signup', 'faq4', 'faq5', 'new_list_mult_choice', 'new_list_mc_2', 'faq1', 'new_list_mc_4', 'new_list_oe', 'new_feature_oe'];
+        var k = 15
+        if( (index%k == 0)&(index/k < seq.length) ){
+//& (Math.random()>.5)
+            return named_questions[seq[index/k]];
+        }
     },
     
     next_question : function(){
-        if( mclbiq.q_stack.length==0 ){
-            mclbiq.get_question_batch(5, '');
+        var q_json = mclbiq.get_scripted_question(db_handler.get_question_index())
+        if( q_json == null ){
+            //Add more questions to the queue, if necessary
+            if( mclbiq.q_stack.length==0 ){
+                mclbiq.get_question_batch(5, '');
+            }
+            q_json = mclbiq.q_stack.pop();
         }
-        var q_json = mclbiq.q_stack.pop();
+        q_json["start_time"] = new Date(); 
         mclbiq.current_question = q_json;
-
+        
 //        Create q object
         var new_q = $("#proto_q").clone()
             .attr("id", null)
@@ -337,6 +363,10 @@ var mclbiq = {
         else if ( q_json.q_type=='name_something' ){ mclbiq.create_name_something_question(q_json, new_q); }
         else if ( q_json.q_type=='most_famous' ){ mclbiq.create_most_famous_question(q_json, new_q); }
         else if ( q_json.q_type=='pick_topic' ){ mclbiq.create_pick_topic_question(q_json, new_q); }
+        else if ( q_json.q_type=='info_only' ){ mclbiq.create_info_only_question(q_json, new_q); }
+        else if ( q_json.q_type=='mult_choice' ){ mclbiq.create_mult_choice_question(q_json, new_q); }
+        else if ( q_json.q_type=='short_answer' ){ mclbiq.create_short_answer_question(q_json, new_q); }
+        else if ( q_json.q_type=='open_ended' ){ mclbiq.create_open_ended_question(q_json, new_q); }
                 
         $(".qanswer", new_q)
             .detach()
@@ -400,7 +430,21 @@ var mclbiq = {
                 'text' : text_content,
                 'status' : status
             };
-        } else if ( qtype=='most_famous' ){ 
+        } else if ( qtype == 'info_only' ){ 
+            answer = {
+                'status' : "okay"
+            };
+        } else if ( qtype == 'short_answer' ){ 
+            answer = {
+                'text' : $("textarea", $(temp).closest(".question")).val(),
+                'status' : "okay"
+            };
+        } else if ( qtype == 'open_ended' ){ 
+            answer = {
+                'text' : $("input", $(temp).closest(".question")).val(),
+                'status' : "okay"
+            };
+        } else if ( _.contains(['mult_choice', 'most_famous'], qtype) ){ 
             answer = {
                 'id' : $('input', this).val(),
                 'status' : "okay"
@@ -416,6 +460,7 @@ var mclbiq = {
             mclbiq.get_question_batch(10, topic);
         }
         
+        answer["end_time"] = new Date();
         
         //!Might eventually be better to break this out into individual functions.
 //        if( parent.data("q-type")=="most_famous" ){
@@ -542,7 +587,6 @@ var mclbiq = {
         for( a in j.q_content.wrong_answers ){
             $(".qbody", new_q).append('<div class="qanswer" data-correct=0><input type="radio" name="q'+j.id+'" value="'+j.q_content.wrong_answers[a].id+'"><span>'+j.q_content.wrong_answers[a].val+'</span></div>');
         }
-
     },
 
     create_not_describe_question : function(j, new_q){
@@ -553,7 +597,6 @@ var mclbiq = {
         for( a in j.q_content.wrong_answers ){
             $(".qbody", new_q).append('<div class="qanswer" data-correct=0><input type="radio" name="q'+j.id+'" value="'+j.q_content.wrong_answers[a].id+'"><span>'+j.q_content.wrong_answers[a].val+'</span></div>');
         }
-
     },
     
     create_name_something_question : function(j, new_q){
@@ -583,6 +626,36 @@ var mclbiq = {
         
         //Suppress img field
         $(".qhead img", new_q).hide();
+    },
+
+    create_info_only_question : function(j, new_q){
+        //Append data in the proper fields
+        $(".qhead", new_q)
+            .append(j.q_content.header)
+            .append('<div class="submit-box"><div class="submit">'+j.q_content.submit_text+'</div></div>');
+    },
+
+    create_mult_choice_question : function(j, new_q){
+        //Append data in the proper fields
+        $(".qhead", new_q).append(j.q_content.header);
+        
+        for( a in j.q_content.answers ){
+            $(".qbody", new_q).append('<div class="qanswer"><input type="radio" name="q'+j.id+'" value="'+j.q_content.answers[a].id+'"><span>'+j.q_content.answers[a].val+'</span></div>');
+        }
+    },
+    
+    create_short_answer_question : function(j, new_q){
+        $(".qhead", new_q)
+            .append(j.q_content.header)
+            .append('<input type="text" name="q'+j.id+'"></textarea>')
+            .append('<div class="submit-box"><div class="submit">'+j.q_content.submit_text+'</div></div>');
+    },
+    
+    create_open_ended_question : function(j, new_q){
+        $(".qhead", new_q)
+            .append(j.q_content.header)
+            .append('<textarea rows=3 name="q'+j.id+'"></textarea>')
+            .append('<div class="submit-box"><div class="submit">'+j.q_content.submit_text+'</div></div>');
     }
 };
 
