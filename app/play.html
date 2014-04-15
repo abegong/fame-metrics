@@ -462,31 +462,6 @@ var mclbiq = {
         
         answer["end_time"] = new Date();
         
-        //!Might eventually be better to break this out into individual functions.
-//        if( parent.data("q-type")=="most_famous" ){
-//        } else if( parent.data("q-type")=="pick_topic" ){
-//            //Add questions to the stack
-//            var topic = $("span", this).html();
-//            mclbiq.get_question_batch(10, topic);
-//        } else if($(this).attr("data-correct")==1){
-//            $("#score-num").html( parseInt($("#score-num").html())+1 );
-//            $("#score-denom").html( parseInt($("#score-denom").html())+1 );
-//        } else {
-//            $("#score-denom").html( parseInt($("#score-denom").html())+1 );
-//        }
-
-        //        if( parent.data("q-type")=="most_famous" ){
-//        } else if( parent.data("q-type")=="pick_topic" ){
-//            //Add questions to the stack
-//            var topic = $("span", this).html();
-//            mclbiq.get_question_batch(10, topic);
-//        } else if($(this).attr("data-correct")==1){
-//            $("#score-num").html( parseInt($("#score-num").html())+1 );
-//            $("#score-denom").html( parseInt($("#score-denom").html())+1 );
-//        } else {
-//            $("#score-denom").html( parseInt($("#score-denom").html())+1 );
-//        }
-
         //Set background color and score counters
         if( answer["status"] == "right" ){
             var bgcolor = "#cfc";
@@ -502,11 +477,6 @@ var mclbiq = {
         } else if ( answer["status"] == "okay" ){
             var bgcolor = "#ccf";
         }
-//        if( parent.data("q-type")=="most_famous" ){
-//        } else if( parent.data("q-type")=="pick_topic" ){
-//        } else if($(this).attr("data-correct")==1){
-//        } else {
-//        }
         
         //Check the input box for the question
         $("input", this).attr("checked", true);
