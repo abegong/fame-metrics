@@ -323,14 +323,12 @@ var mclbiq = {
         //Every batch starts with at least two basic questions
         mclbiq.q_stack.push(db_handler.get_question('basic', topic));
         mclbiq.q_stack.push(db_handler.get_question('basic', topic));
-        mclbiq.q_stack.push(db_handler.get_question('basic', topic));
     },
     
     get_scripted_question : function(index){
-        var seq = ['welcome', 'when_score', 'faq2', 'new_list_mc_1', 'new_list_mc_2', 'new_feature_oe', 'new_list_mc_3'];//'faq2', 'new_list_mc_3', 'faq3', 'email_signup', 'faq4', 'faq5', 'new_list_mult_choice', 'new_list_mc_2', 'faq1', 'new_list_mc_4', 'new_list_oe', 'new_feature_oe'];
+        var seq = ['welcome', 'when_score', 'faq2', 'new_list_mc_1', 'email_again', 'new_list_mc_2', 'email_again', 'new_feature_oe', 'new_list_mc_3'];//'faq2', 'new_list_mc_3', 'faq3', 'email_signup', 'faq4', 'faq5', 'new_list_mult_choice', 'new_list_mc_2', 'faq1', 'new_list_mc_4', 'new_list_oe', 'new_feature_oe'];
         var k = 15
         if( (index%k == 0)&(index/k < seq.length) ){
-//& (Math.random()>.5)
             return named_questions[seq[index/k]];
         }
     },
@@ -436,12 +434,12 @@ var mclbiq = {
             };
         } else if ( qtype == 'short_answer' ){ 
             answer = {
-                'text' : $("textarea", $(temp).closest(".question")).val(),
+                'text' : $("input", $(temp).closest(".question")).val(),
                 'status' : "okay"
             };
         } else if ( qtype == 'open_ended' ){ 
             answer = {
-                'text' : $("input", $(temp).closest(".question")).val(),
+                'text' : $("textarea", $(temp).closest(".question")).val(),
                 'status' : "okay"
             };
         } else if ( _.contains(['mult_choice', 'most_famous'], qtype) ){ 

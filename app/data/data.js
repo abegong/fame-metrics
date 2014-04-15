@@ -24,6 +24,15 @@ named_questions = {
 		}
 	},
 
+	email_again : {
+		id : "email_again",
+		q_type : "short_answer",
+		q_content : {
+			header : "<h2>Please add your contact info</h2><p>If you haven't already, please enter your email here, so that we can let you know when your score is available.</p>",
+			submit_text : "Done"
+		}
+	},
+
 	faq1 : {
 		id : "faq1",
 		q_type : "info_only",
