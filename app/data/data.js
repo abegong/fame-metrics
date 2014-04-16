@@ -150,39 +150,4 @@ named_questions = {
 		}
 	},
 
-	// new_feature_mc_1 : {
-	// 	id : "new_feature_mc",
-	// 	q_type : "mult_choice",
-	// 	q_content : {
-	// 		header : "<h2>If you could make one improvement to this site, what would it be?</h2>",
-	// 		answers : _.map(_.range(0,5), function(i){return{id: i, val: potential_features[i]}})
-	// 	}
-	// },
-
-
-
-// We're always looking for new ideas for lists of celebrities to add. Any suggestions?
-// If you could make one improvement to this site, what would it be? [mult_choice and open_ended]
-// How could we make this game more ...
-
-
 };
-
-
-
-
-
-
-// If you could add one list of celebrities, what would it be?
-
-// We're always looking for new ideas for lists of celebrities to add. Any suggestions?
-// Please name a celebrity who should definitely show up in this topic.
-
-
-// Is it okay to look up the answers?
-// Um, no. That's called cheating. We have trained parrots who watch for signs of cheating, and squack loudly whenever they see anything suspicious.
-
-// Thanks
-
-// Why PeopleIQ?
-// If you know the people in an area, it's a good chang
