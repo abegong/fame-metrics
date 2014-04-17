@@ -43,7 +43,7 @@
 
 <script>
 var db_handler = {
-    debug_mode : true,
+    debug_mode : false,
     fb_sessions : null,
     fb_answers : null,
     session_obj : null,
@@ -329,7 +329,7 @@ var mclbiq = {
     
     get_scripted_question : function(index){
         var seq = ['welcome', 'when_score', 'faq2', 'why_celebs', 'email_again', 'new_list_mc_1', 'new_feature_oe', 'email_again', 'new_list_mc_2', 'new_list_mc_3', 'email_again'];//'faq2', 'new_list_mc_3', 'faq3', 'email_signup', 'faq4', 'faq5', 'new_list_mult_choice', 'new_list_mc_2', 'faq1', 'new_list_mc_4', 'new_list_oe', 'new_feature_oe'];
-        var k = 1;
+        var k = 15;
         if( (index%k == 0)&(index/k < seq.length) ){
             return named_questions[seq[index/k]];
         }
